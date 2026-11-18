@@ -6,11 +6,18 @@ import { useState, type FormEvent } from "react";
 import { useDemo } from "../componentes/datos-demo";
 
 export default function FormularioInvitacion() {
-  const { empresas, aceptarInvitacion } = useDemo();
+  const { empresas, usuarios, aceptarUsuario } = useDemo();
   const params = useSearchParams();
   const router = useRouter();
   const [error, setError] = useState("");
-  const empresa = empresas.find((item) => item.id === params.get("empresa"));
+  const usuarioId = params.get("usuario");
+  const empresaId = params.get("empresa");
+  const invitado = usuarioId !== null
+    ? usuarios.find((usuario) => usuario.id === usuarioId)
+    : usuarios.find((usuario) => usuario.empresaId === empresaId && usuario.principal);
+  const empresa = empresas.find((item) => item.id === invitado?.empresaId);
+  const disponible = invitado?.estado === "Pendiente" && !!empresa &&
+    (usuarioId !== null || empresa.estado === "Pendiente");
 
   function aceptar(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -19,13 +26,13 @@ export default function FormularioInvitacion() {
       setError("Las contraseñas no coinciden.");
       return;
     }
-    if (!empresa) return;
+    if (!disponible || !invitado) return;
     // Solo cambiamos el estado de la demostración. No almacenamos contraseñas.
-    aceptarInvitacion(empresa.id);
+    aceptarUsuario(invitado.id);
     router.push("/panel");
   }
 
-  if (!empresa || empresa.estado === "Activa") return (
+  if (!disponible || !empresa || !invitado) return (
     <section className="nero-tarjeta">
       <h1>Invitación no disponible</h1>
       <p>La invitación de prueba no existe, ya fue aceptada o se reinició al recargar.</p>
@@ -37,12 +44,12 @@ export default function FormularioInvitacion() {
     <section className="nero-tarjeta">
       <div className="nero-marca"><span aria-hidden="true">N</span> NERO</div>
       <h1>Tu empresa te espera</h1>
-      <p>{empresa.administrador}, configura tu acceso a <strong>{empresa.nombreComercial || empresa.razonSocial}</strong>.</p>
+      <p>{invitado.nombre}, configura tu acceso a <strong>{empresa.nombreComercial || empresa.razonSocial}</strong>.</p>
       <p className="nero-demo">Invitación de demostración. Usa una contraseña ficticia; no se guardará.</p>
       <form onSubmit={aceptar} onChange={() => setError("")}>
         <div className="nero-campo">
           <label htmlFor="invitado">Correo invitado</label>
-          <input id="invitado" type="email" value={empresa.correo} readOnly />
+          <input id="invitado" type="email" value={invitado.correo} readOnly />
         </div>
         <div className="nero-campo">
           <label htmlFor="nuevaClave">Contraseña de prueba</label>
@@ -55,7 +62,7 @@ export default function FormularioInvitacion() {
         {error && <p role="alert" className="nero-error">{error}</p>}
         <button type="submit" className="nero-boton">Aceptar invitación de prueba</button>
       </form>
-      <p className="nero-pie"><Link href={`/plataforma/empresas/${empresa.id}`} className="nero-enlace">Volver a la ficha</Link></p>
+      <p className="nero-pie"><Link href={usuarioId !== null ? "/panel/usuarios" : `/plataforma/empresas/${empresa.id}`} className="nero-enlace">{usuarioId !== null ? "Volver a usuarios" : "Volver a la ficha"}</Link></p>
     </section>
   );
 }
