@@ -1,0 +1,74 @@
+.nero-marco {
+  display: grid;
+  grid-template-columns: 224px minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+.nero-lateral {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  padding: 28px 18px;
+  border-right: 1px solid #e2e8f0;
+  background: white;
+}
+
+.nero-lateral .nero-marca { padding: 0 10px; }
+
+.nero-lateral-titulo {
+  margin: 44px 12px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.nero-lateral nav { display: grid; gap: 6px; }
+
+.nero-lateral nav a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  color: #526078;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.nero-lateral nav a:hover { background: #f1f5f9; }
+.nero-lateral nav a[aria-current="page"] { background: #eff6ff; color: #1d4ed8; font-weight: 600; }
+.nero-lateral-icono { width: 20px; font-size: 22px; line-height: 1; text-align: center; }
+
+.nero-lateral-pie {
+  display: grid;
+  gap: 14px;
+  margin-top: auto;
+  padding: 20px 12px 0;
+  border-top: 1px solid #e2e8f0;
+  font-size: 13px;
+}
+
+.nero-lateral-demo { color: #64748b; font-size: 12px; }
+.nero-lateral-pie a:hover { color: #1d4ed8; }
+.nero-marco-principal { min-width: 0; }
+.nero-marco .nero-cabecera { min-height: 76px; padding: 20px 28px; justify-content: space-between; }
+.nero-marco .nero-area { color: #334155; font-size: 14px; font-weight: 600; }
+.nero-cabecera-perfil { padding: 6px 10px; background: #f1f5f9; border-radius: 6px; color: #64748b; font-size: 12px; }
+
+/* Al compartir espacio con el menú, el formulario necesita más ancho. */
+@media (min-width: 761px) and (max-width: 1100px) {
+  .nero-marco .empresa-campos, .nero-marco .nero-columnas { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 760px) {
+  .nero-marco { grid-template-columns: 1fr; }
+  .nero-lateral { position: static; height: auto; padding: 16px; border-right: 0; border-bottom: 1px solid #e2e8f0; }
+  .nero-lateral-titulo { margin: 20px 12px 10px; }
+  .nero-lateral nav { display: flex; flex-wrap: wrap; }
+  .nero-lateral-pie { display: flex; justify-content: space-between; flex-wrap: wrap; margin-top: 16px; padding-top: 12px; }
+  .nero-marco .nero-cabecera { min-height: auto; padding: 16px; }
+}
