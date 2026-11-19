@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useDemo } from "@/contexto/demostracion";
+import { modulos, rutaSeccion } from "@/modulos/catalogo";
 
 export default function InicioGestionPage() {
   const { empresas, empresaActual, usuarios, usuarioActual, sedes, procesos, puestos } = useDemo();
@@ -33,9 +34,10 @@ export default function InicioGestionPage() {
             <li><Link href="/gestion/personas/usuarios" className="nero-enlace">Personas sin puesto</Link><strong>{equipo.filter((item) => !item.puestoId).length}</strong></li>
             <li><Link href="/gestion/personas/usuarios" className="nero-enlace">Invitaciones pendientes</Link><strong>{equipo.filter((item) => item.estado === "Pendiente").length}</strong></li>
           </ul></section>
-          <section className="nero-tarjeta"><span className="nero-etiqueta">Siguiente etapa</span><h2>Gestión documental</h2><p className="nero-texto-secundario">Documentos, versiones, revisión y aprobación. Este módulo se construirá sobre la estructura y los puestos que estamos definiendo.</p><p className="nero-texto-secundario">Todavía no disponible.</p></section>
+          <section className="nero-tarjeta"><span className="nero-etiqueta">Explora el frontend</span><h2>Gestión documental</h2><p className="nero-texto-secundario">Prueba la biblioteca, registra documentos y revisa sus datos y adjuntos durante esta sesión.</p><Link className="nero-enlace" href="/gestion/documentos/controlados">Abrir biblioteca</Link></section>
         </div>
       </div>
+      <section className="nero-seccion-modulos"><h2>Módulos del sistema</h2><p className="nero-texto-secundario">Explora las pestañas y sus flujos de demostración.</p><div className="nero-modulos-grid">{modulos.map((modulo) => <Link className="nero-tarjeta nero-modulo-enlace" key={modulo.id} href={rutaSeccion(modulo.id, modulo.secciones[0].id)}><span className="nero-etiqueta">{modulo.secciones.length} apartados</span><h3>{modulo.titulo}</h3><p>{modulo.descripcion}</p></Link>)}</div></section>
     </main>
   );
 }

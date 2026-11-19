@@ -18,6 +18,7 @@
 }
 
 .nero-lateral .nero-marca { padding: 0 10px; }
+.nero-menu-toggle { display: none; }
 
 .nero-lateral-titulo {
   margin: 28px 12px 12px;
@@ -72,8 +73,12 @@
 @media (max-width: 760px) {
   .nero-marco { grid-template-columns: 1fr; }
   .nero-lateral { position: static; height: auto; padding: 16px; border-right: 0; border-bottom: 1px solid #e2e8f0; }
+  .nero-menu-toggle { display: block; position: absolute; right: 16px; top: 20px; padding: 8px 10px; border: 1px solid #8197ad; border-radius: 6px; color: white; font-size: 12px; }
+  .nero-lateral[data-abierto="false"] nav, .nero-lateral[data-abierto="false"] .nero-lateral-pie { display: none; }
   .nero-lateral-titulo { margin: 20px 12px 10px; }
-  .nero-lateral nav { display: grid; grid-template-columns: 1fr 1fr; }
+  .nero-lateral nav { display: grid; grid-template-columns: 1fr; max-height: 50dvh; overflow-y: auto; }
+  .nero-lateral nav > div:last-child { display: flex; flex-wrap: wrap; }
+  .nero-lateral nav > div:last-child .nero-lateral-titulo { width: 100%; }
   .nero-lateral-pie { display: flex; justify-content: space-between; flex-wrap: wrap; margin-top: 16px; padding-top: 12px; }
   .nero-marco .nero-cabecera { min-height: auto; padding: 16px; }
 }
