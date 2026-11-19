@@ -1,0 +1,13 @@
+warning: in the working copy of 'app/aceptar-invitacion/formulario-invitacion.tsx', LF will be replaced by CRLF the next time Git touches it
+[1mdiff --git a/app/aceptar-invitacion/formulario-invitacion.tsx b/app/aceptar-invitacion/formulario-invitacion.tsx[m
+[1mindex 4c23157..9eeb16b 100644[m
+[1m--- a/app/aceptar-invitacion/formulario-invitacion.tsx[m
+[1m+++ b/app/aceptar-invitacion/formulario-invitacion.tsx[m
+[36m@@ -17,6 +17,7 @@[m [mexport default function FormularioInvitacion() {[m
+     const datos = new FormData(event.currentTarget);[m
+     if (datos.get("clave") !== datos.get("confirmacion")) {[m
+       setError("Las contraseñas no coinciden.");[m
+[32m+[m[41m        [m
+       return;[m
+     }[m
+     if (!empresa) return;[m

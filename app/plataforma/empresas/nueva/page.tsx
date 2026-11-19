@@ -4,7 +4,7 @@ import "./formulario.css";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
-import { useDemo } from "../../../componentes/datos-demo";
+import { useDemo } from "@/contexto/demostracion";
 
 export default function NuevaEmpresa() {
   const router = useRouter();

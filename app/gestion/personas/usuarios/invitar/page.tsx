@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
-import { useDemo } from "../../../componentes/datos-demo";
-import { roles, descripcionRoles, type Rol } from "../../../datos/usuarios-demo";
+import { useDemo } from "@/contexto/demostracion";
+import { roles, descripcionRoles, type Rol } from "@/datos-demo/usuarios";
 
 export default function InvitarUsuarioPage() {
   const { empresas, empresaActual, invitarUsuario } = useDemo();
@@ -25,7 +25,7 @@ export default function InvitarUsuarioPage() {
 
   return (
     <main>
-      <Link className="nero-enlace" href="/panel/usuarios">← Volver a usuarios</Link>
+      <Link className="nero-enlace" href="/gestion/personas/usuarios">← Volver a usuarios</Link>
       <div className="nero-titulo"><div><h1>Invitar usuario</h1><p>El nuevo usuario pertenecerá a {empresa.nombreComercial || empresa.razonSocial}.</p></div></div>
       {invitacion ? (
         <section className="nero-tarjeta nero-form-estrecho">
@@ -33,7 +33,7 @@ export default function InvitarUsuarioPage() {
           <p role="status">{invitacion.correo} figura como pendiente en el equipo. No se ha enviado ningún correo.</p>
           <div className="nero-acciones">
             <Link href={`/aceptar-invitacion?usuario=${invitacion.id}`} className="nero-boton">Probar aceptación</Link>
-            <Link href="/panel/usuarios" className="nero-boton nero-secundario">Ver equipo</Link>
+            <Link href="/gestion/personas/usuarios" className="nero-boton nero-secundario">Ver equipo</Link>
             <button className="nero-enlace" onClick={() => { setInvitacion(null); setRol("Operador"); }}>Invitar a otra persona</button>
           </div>
         </section>
@@ -48,7 +48,7 @@ export default function InvitarUsuarioPage() {
           </div>
           <p className="nero-demo">El usuario establecerá su contraseña al aceptar la invitación. En esta demo no se guardan contraseñas ni se envían correos.</p>
           {error && <p role="alert" className="nero-error">{error}</p>}
-          <div className="nero-acciones nero-al-final"><Link href="/panel/usuarios" className="nero-boton nero-secundario">Cancelar</Link><button type="submit" className="nero-boton">Crear invitación de prueba</button></div>
+          <div className="nero-acciones nero-al-final"><Link href="/gestion/personas/usuarios" className="nero-boton nero-secundario">Cancelar</Link><button type="submit" className="nero-boton">Crear invitación de prueba</button></div>
         </form>
       )}
     </main>

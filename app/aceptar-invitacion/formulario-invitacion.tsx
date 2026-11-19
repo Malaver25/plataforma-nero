@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, type FormEvent } from "react";
-import { useDemo } from "../componentes/datos-demo";
+import { useDemo } from "@/contexto/demostracion";
 
 export default function FormularioInvitacion() {
   const { empresas, usuarios, aceptarUsuario } = useDemo();
@@ -11,13 +11,10 @@ export default function FormularioInvitacion() {
   const router = useRouter();
   const [error, setError] = useState("");
   const usuarioId = params.get("usuario");
-  const empresaId = params.get("empresa");
   const invitado = usuarioId !== null
     ? usuarios.find((usuario) => usuario.id === usuarioId)
-    : usuarios.find((usuario) => usuario.empresaId === empresaId && usuario.principal);
+    : usuarios.find((usuario) => usuario.empresaId === params.get("empresa") && usuario.principal);
   const empresa = empresas.find((item) => item.id === invitado?.empresaId);
-  const disponible = invitado?.estado === "Pendiente" && !!empresa &&
-    (usuarioId !== null || empresa.estado === "Pendiente");
 
   function aceptar(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -26,13 +23,13 @@ export default function FormularioInvitacion() {
       setError("Las contraseñas no coinciden.");
       return;
     }
-    if (!disponible || !invitado) return;
+    if (!empresa || !invitado || invitado.estado !== "Pendiente") return;
     // Solo cambiamos el estado de la demostración. No almacenamos contraseñas.
     aceptarUsuario(invitado.id);
-    router.push("/panel");
+    router.push("/gestion");
   }
 
-  if (!disponible || !empresa || !invitado) return (
+  if (!empresa || !invitado || invitado.estado !== "Pendiente") return (
     <section className="nero-tarjeta">
       <h1>Invitación no disponible</h1>
       <p>La invitación de prueba no existe, ya fue aceptada o se reinició al recargar.</p>
@@ -62,7 +59,7 @@ export default function FormularioInvitacion() {
         {error && <p role="alert" className="nero-error">{error}</p>}
         <button type="submit" className="nero-boton">Aceptar invitación de prueba</button>
       </form>
-      <p className="nero-pie"><Link href={usuarioId !== null ? "/panel/usuarios" : `/plataforma/empresas/${empresa.id}`} className="nero-enlace">{usuarioId !== null ? "Volver a usuarios" : "Volver a la ficha"}</Link></p>
+      <p className="nero-pie"><Link href={`/plataforma/empresas/${empresa.id}`} className="nero-enlace">Volver a la ficha</Link></p>
     </section>
   );
 }

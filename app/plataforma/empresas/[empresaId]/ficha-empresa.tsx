@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useDemo } from "../../../componentes/datos-demo";
+import { useDemo } from "@/contexto/demostracion";
 
 export default function FichaEmpresa({ id }: { id: string }) {
   const { empresas } = useDemo();

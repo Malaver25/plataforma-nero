@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useDemo } from "../componentes/datos-demo";
+import { useDemo } from "@/contexto/demostracion";
 
 export default function InicioPlataforma() {
   const { empresas, usuarios } = useDemo();
@@ -62,7 +62,7 @@ export default function InicioPlataforma() {
           <div className="nero-accesos">
             <Link href="/plataforma/empresas/nueva"><strong>Crear una empresa <span aria-hidden="true">→</span></strong><span>Registrar sus datos y su primer administrador.</span></Link>
             <Link href="/plataforma/empresas"><strong>Consultar empresas <span aria-hidden="true">→</span></strong><span>Buscar empresas y revisar su estado.</span></Link>
-            <Link href="/panel"><strong>Ver espacio de empresa (demo) <span aria-hidden="true">→</span></strong><span>Probar el perfil y la gestión del equipo.</span></Link>
+            <Link href="/gestion"><strong>Ver espacio de empresa (demo) <span aria-hidden="true">→</span></strong><span>Probar el perfil y la gestión del equipo.</span></Link>
           </div>
         </section>
       </div>

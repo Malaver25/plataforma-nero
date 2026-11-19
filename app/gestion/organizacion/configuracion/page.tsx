@@ -1,7 +1,7 @@
 "use client";
 
-import { useDemo } from "../../componentes/datos-demo";
-import FormularioPerfil from "./formulario-perfil";
+import { useDemo } from "@/contexto/demostracion";
+import FormularioEmpresa from "./formulario-empresa";
 
 export default function ConfiguracionPage() {
   const { empresas, empresaActual } = useDemo();
@@ -11,7 +11,7 @@ export default function ConfiguracionPage() {
       <div className="nero-titulo">
         <div><p className="nero-sobretitulo">{empresa.nombreComercial || empresa.razonSocial}</p><h1>Configuración de empresa</h1><p>Completa la identidad, los datos de contacto y las preferencias de tu empresa.</p></div>
       </div>
-      <FormularioPerfil key={empresa.id} empresa={empresa} />
+      <FormularioEmpresa key={empresa.id} empresa={empresa} />
     </main>
   );
 }

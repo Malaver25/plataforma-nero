@@ -9,12 +9,12 @@ export default function LoginPage() {
   return (
     <main className="nero-acceso">
       <section className="nero-tarjeta">
-        <div className="nero-marca"><span aria-hidden="true">N</span> NERO</div>
-        <h1>Bienvenido a Nero</h1>
-        <p>Accede al espacio de tu empresa.</p>
+        <div className="nero-marca"><span aria-hidden="true">N</span> NERO Gestión</div>
+        <h1>La gestión de tu organización</h1>
+        <p>Organiza sedes, procesos y personas en un mismo espacio.</p>
         <p className="nero-demo">Vista previa sin autenticación. Usa datos ficticios; no se guardan contraseñas.</p>
 
-        <form onSubmit={(event) => { event.preventDefault(); router.push("/panel"); }}>
+        <form onSubmit={(event) => { event.preventDefault(); router.push("/gestion"); }}>
           <div className="nero-campo">
             <label htmlFor="correo">Correo electrónico</label>
             <input id="correo" type="email" placeholder="tu@empresa.com" autoComplete="username" required />

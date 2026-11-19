@@ -1,12 +1,12 @@
-import MarcoPanel from "../componentes/marco-panel";
+import EstructuraAplicacion from "@/componentes/estructura/estructura-aplicacion";
 
-export default function PanelLayout({ children }: { children: React.ReactNode }) {
+export default function GestionLayout({ children }: { children: React.ReactNode }) {
   return (
-    <MarcoPanel area="empresa">
+    <EstructuraAplicacion area="empresa">
       <div className="nero-contenido">
         <p className="nero-demo">Demostración · Solo datos ficticios. Los cambios se reinician al recargar; acceso y permisos reales pendientes.</p>
         {children}
       </div>
-    </MarcoPanel>
+    </EstructuraAplicacion>
   );
 }

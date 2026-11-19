@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import "./interfaz.css";
-import { ProveedorDemo } from "./componentes/datos-demo";
+import "./sistema-gestion.css";
+import { ProveedorDemo } from "@/contexto/demostracion";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Nero | Gestión empresarial",
-  description: "Prototipo de la plataforma de gestión Nero.",
+  title: "NERO Gestión | Sistema de gestión organizacional",
+  description: "Organización, personas y seguimiento de la gestión empresarial.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

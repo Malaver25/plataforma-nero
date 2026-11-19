@@ -1,4 +1,4 @@
-import { roles, descripcionRoles } from "../../datos/usuarios-demo";
+import { roles, descripcionRoles } from "@/datos-demo/usuarios";
 
 export default function RolesEquipo() {
   return (

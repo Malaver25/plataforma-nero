@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import { useState, type ChangeEvent, type FormEvent } from "react";
-import { useDemo } from "../../componentes/datos-demo";
-import type { Empresa, PerfilEmpresa } from "../../datos/empresas-demo";
+import { useDemo } from "@/contexto/demostracion";
+import type { Empresa, PerfilEmpresa } from "@/datos-demo/empresas";
 
 const camposContacto: { clave: keyof PerfilEmpresa; texto: string; tipo: string; ejemplo: string }[] = [
   { clave: "correoContacto", texto: "Correo de la empresa", tipo: "email", ejemplo: "contacto@empresa.com" },
@@ -14,7 +14,7 @@ const camposContacto: { clave: keyof PerfilEmpresa; texto: string; tipo: string;
   { clave: "codigoPostal", texto: "Código postal", tipo: "text", ejemplo: "Opcional" },
 ];
 
-export default function FormularioPerfil({ empresa }: { empresa: Empresa }) {
+export default function FormularioEmpresa({ empresa }: { empresa: Empresa }) {
   const { actualizarEmpresa } = useDemo();
   const [razonSocial, setRazonSocial] = useState(empresa.razonSocial);
   const [nombreComercial, setNombreComercial] = useState(empresa.nombreComercial);
@@ -62,8 +62,8 @@ export default function FormularioPerfil({ empresa }: { empresa: Empresa }) {
   }
 
   return (
-    <form className="nero-formulario" onSubmit={guardar} onChange={() => { setMensaje(""); setError(""); }}>
-      <p className="nero-texto-secundario">* Campo obligatorio. Los datos bancarios y la emisión electrónica se configurarán en una etapa posterior.</p>
+    <form className="nero-formulario" onSubmit={guardar} onChangeCapture={() => { setMensaje(""); setError(""); }}>
+      <p className="nero-texto-secundario">* Campo obligatorio. Identidad, contacto y preferencias de la organización.</p>
       <fieldset className="nero-tarjeta">
         <legend>Identidad de la empresa</legend>
         <div className="nero-form-grid">

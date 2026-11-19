@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { useDemo } from "../../componentes/datos-demo";
+import { useDemo } from "@/contexto/demostracion";
 
 export default function EmpresasPage() {
   const { empresas } = useDemo();
