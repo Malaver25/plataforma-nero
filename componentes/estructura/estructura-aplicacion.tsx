@@ -1,7 +1,6 @@
 import { Suspense, type ReactNode } from "react";
 import Cabecera from "./cabecera";
 import MenuLateral from "./menu-lateral";
-import "./menu-lateral.css";
 
 export default function EstructuraAplicacion({ area, children }: {
   area: "plataforma" | "empresa";

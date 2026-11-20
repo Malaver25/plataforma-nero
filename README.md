@@ -33,8 +33,8 @@ Campus, Analytics, verificación de accesos y otras vistas sin servicio real mue
 - datos-demo: datos ficticios iniciales de la estructura.
 - modulos/definiciones.ts: tipos de campos y constructores sencillos.
 - modulos/gestion-interna.ts y modulos/operaciones.ts: campos, estados y apartados de cada módulo.
-- app/globals.css: colores de marca.
-- app/sistema-gestion.css: estilos compartidos.
+- app/globals.css: Tailwind CSS 4, tokens de marca y estilos reutilizables hechos con `@apply` (sin hojas CSS separadas).
+- Los componentes mantienen clases semánticas `nero-*` para evitar repetir grandes cadenas de utilidades y facilitar su mantenimiento.
 
 Los componentes compartidos evitan copiar el mismo listado y formulario en decenas de archivos. Para cambiar los campos de una pestaña, empieza por su definición en modulos; para cambiar su comportamiento común, revisa componentes/modulos.
 
