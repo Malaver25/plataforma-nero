@@ -5,14 +5,17 @@ import { useState } from "react";
 import { useDemo } from "@/contexto/demostracion";
 import { roles } from "@/datos-demo/usuarios";
 import RolesEquipo from "./roles-equipo";
+import EditorUsuario from "@/componentes/organizacion/editor-usuario";
 
 export default function UsuariosPage() {
   const { empresas, usuarios, empresaActual, usuarioActual, puestos, asignarPuesto } = useDemo();
   const puestosEmpresa = puestos.filter((puesto) => puesto.empresaId === empresaActual);
   const [mensaje, setMensaje] = useState("");
   const [error, setError] = useState("");
+  const [editar, setEditar] = useState("");
   const empresa = empresas.find((item) => item.id === empresaActual)!;
   const equipo = usuarios.filter((usuario) => usuario.empresaId === empresaActual);
+  const seleccionado = equipo.find(u => u.id === editar);
   const [busqueda, setBusqueda] = useState("");
   const [rol, setRol] = useState("");
   const [estado, setEstado] = useState("");
@@ -34,6 +37,7 @@ export default function UsuariosPage() {
       </dl>
       {mensaje && <p className="nero-exito" role="status">{mensaje}</p>}
       {error && <p className="nero-error" role="alert">{error}</p>}
+      {seleccionado && <EditorUsuario key={seleccionado.id} usuario={seleccionado} cancelar={() => setEditar("")} guardado={nombre => { setEditar(""); setBusqueda(""); setRol(""); setEstado(""); setMensaje(`Datos actualizados para ${nombre}.`); setError(""); }} />}
       <section className="nero-tarjeta nero-seccion" aria-label="Listado de usuarios">
         <div className="nero-filtros">
           <div><label htmlFor="buscar-usuario">Buscar usuario</label><input id="buscar-usuario" type="search" placeholder="Nombre o correo" value={busqueda} onChange={(e) => setBusqueda(e.target.value)} /></div>
@@ -43,7 +47,7 @@ export default function UsuariosPage() {
         <div className="nero-tabla">
           <table>
             <caption className="sr-only">Usuarios de {empresa.razonSocial}</caption>
-            <thead><tr><th scope="col">Usuario</th><th scope="col">Rol general</th><th scope="col">Puesto</th><th scope="col">Estado</th><th scope="col">Invitación</th></tr></thead>
+            <thead><tr><th scope="col">Usuario</th><th scope="col">Rol general</th><th scope="col">Puesto</th><th scope="col">Estado</th><th scope="col">Invitación</th><th scope="col">Edición</th></tr></thead>
             <tbody>{visibles.map((usuario) => (
               <tr key={usuario.id}>
                 <td><strong>{usuario.nombre}</strong>{usuario.id === usuarioActual && <span className="nero-tu">Tú</span>}<small>{usuario.correo}</small></td>
@@ -55,6 +59,7 @@ export default function UsuariosPage() {
                 }}><option value="">Sin puesto asignado</option>{puestosEmpresa.map((puesto) => <option key={puesto.id} value={puesto.id}>{puesto.nombre}</option>)}</select></td>
                 <td><span className="nero-estado" data-estado={usuario.estado}>{usuario.estado}</span></td>
                 <td>{usuario.estado === "Pendiente" ? <Link className="nero-enlace" href={`/aceptar-invitacion?usuario=${usuario.id}`} aria-label={`Probar invitación de ${usuario.nombre}`}>Probar invitación →</Link> : <span className="nero-texto-secundario">Aceptada</span>}</td>
+                <td><button className="nero-enlace" onClick={() => { setEditar(usuario.id); setMensaje(""); setError(""); }} aria-label={`Editar usuario ${usuario.nombre}`}>Editar</button></td>
               </tr>
             ))}</tbody>
           </table>

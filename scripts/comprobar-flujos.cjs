@@ -48,6 +48,10 @@ assert.equal(reglas.medicionesPendientes(objetivo, [simple({ origen: 'r', fecha:
 assert.equal(reglas.medicionesPendientes(objetivo, [{ ...medicion, archivado: true }], '2026-02-01').length, 1);
 assert.equal(reglas.nivelRiesgo(20), 'Muy alto');
 assert.equal(reglas.nivelRiesgo(20, 3), 'Alto');
+const control = simple({ aplicacion: '5', ejecucion: '5', responsabilidad: '5', prevencion: '5', documentacion: '5', categoriaControl: 'Específico' });
+assert.equal(reglas.proteccionControl(control.valores).vulnerabilidad, 0.2);
+assert.equal(reglas.riesgoConControl(4, 5, control), 4);
+assert.equal(reglas.riesgoConControl(4, 5, simple({ ...control.valores, categoriaControl: 'Genérico' })), 16);
 assert.equal(reglas.validarTransicion(simple({}, { clave: 'no-conformidades/registro', estado: 'En proceso' }), 'Cerrada', []).includes('acciones'), true);
 
 const { ProveedorModulosDemo } = cargar(path.join(raiz, 'contexto/modulos-demo.tsx'));
@@ -73,6 +77,12 @@ assert.ok(actualizar(ctx.registros.find(r => r.id === doc.id), { nombre: 'Cambia
 assert.equal(ctx.nuevaVersion(doc.id), undefined); render();
 assert.equal(ctx.registros.find(r => r.id === doc.id).estado, 'Borrador');
 assert.equal(ctx.registros.find(r => r.id === doc.id).versiones.at(-1).archivos[0].name, 'manual.txt');
+demo.sedes = [{ id: 'sede-a', empresaId: 'norte', nombre: 'Sede A' }, { id: 'sede-b', empresaId: 'norte', nombre: 'Sede B' }]; render();
+const departamento = crear('organizacion/departamentos', { sede: 'sede-a' }, 'Activo', 'Departamento principal');
+const subdepartamento = crear('organizacion/departamentos', { sede: 'sede-a', padre: departamento.id }, 'Activo', 'Departamento hijo');
+assert.ok(actualizar(departamento, { valores: { sede: 'sede-a', padre: subdepartamento.id } }).error, 'Impide ciclos de departamentos');
+assert.ok(actualizar(subdepartamento, { valores: { sede: 'sede-b', padre: departamento.id } }).error, 'Impide jerarquías entre sedes');
+assert.ok(actualizar(departamento, { valores: { sede: 'sede-b' } }).error, 'Impide dejar hijos en otra sede');
 const producto = crear('infinity/inventario', { cantidad: '10' }, 'Activo');
 crear('infinity/movimientos', { producto: producto.id, cantidad: '7', tipo: 'Salida', fecha: '2026-11-20' }, 'Registrado');
 assert.equal(reglas.stock(producto, ctx.registros), 3);

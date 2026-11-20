@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRef, useState, type FormEvent } from "react";
 import { useDemo } from "@/contexto/demostracion";
+import { useModulosDemo } from "@/contexto/modulos-demo";
 import { funcionesPuesto, nivelesAcceso, permisosVacios, tiposProceso, type PermisosPuesto, type Proceso } from "@/datos-demo/organizacion";
 
 type Tipo = "sedes" | "procesos" | "puestos";
@@ -34,6 +35,7 @@ export default function GestorEstructura({ tipo }: { tipo: Tipo }) {
 
 function EditorEstructura({ tipo }: { tipo: Tipo }) {
   const { empresaActual, sedes, procesos, puestos, usuarios, guardarSede, guardarProceso, guardarPuesto } = useDemo();
+  const { registros: registrosModulos } = useModulosDemo();
   const sedesEmpresa = sedes.filter((item) => item.empresaId === empresaActual);
   const procesosEmpresa = procesos.filter((item) => item.empresaId === empresaActual);
   const puestosEmpresa = puestos.filter((item) => item.empresaId === empresaActual);
@@ -65,6 +67,10 @@ function EditorEstructura({ tipo }: { tipo: Tipo }) {
     event.preventDefault();
     if (!formulario) return;
     const { id, nombre, direccion, sedeId, descripcion, responsabilidades, procesoIds, permisos } = formulario;
+    const anterior = procesosEmpresa.find(p => p.id === id);
+    if (tipo === "procesos" && anterior && anterior.sedeId !== sedeId && registrosModulos.some(r => r.valores.proceso === id && r.valores.sede && r.valores.sede !== sedeId)) {
+      setError("Este proceso tiene registros de módulos vinculados a su sede actual. Reasígnalos antes de cambiar la sede."); return;
+    }
     const resultado = tipo === "sedes" ? guardarSede({ id, nombre, direccion })
       : tipo === "procesos" ? guardarProceso({ id, nombre, sedeId, tipo: formulario.tipo, descripcion, padreId: formulario.padreId })
       : guardarPuesto({ id, nombre, sedeId, responsabilidades, procesoIds, permisos, requisitos: formulario.requisitos, riesgo: formulario.riesgo, revision: formulario.revision });
@@ -83,7 +89,7 @@ function EditorEstructura({ tipo }: { tipo: Tipo }) {
       <div className="nero-form-grid">
         <div className="nero-campo"><label htmlFor="nombre-registro">Nombre *</label><input id="nombre-registro" value={formulario.nombre} onChange={(event) => cambiar("nombre", event.target.value)} required maxLength={120} autoFocus /></div>
         {tipo === "sedes" ? <div className="nero-campo"><label htmlFor="direccion-sede">Dirección</label><input id="direccion-sede" value={formulario.direccion} onChange={(event) => cambiar("direccion", event.target.value)} maxLength={250} /></div>
-          : <div className="nero-campo"><label htmlFor="sede-registro">Sede *</label><select id="sede-registro" value={formulario.sedeId} required onChange={(event) => { cambiar("sedeId", event.target.value); cambiar("procesoIds", []); }}><option value="">Selecciona una sede</option>{sedesEmpresa.map((sede) => <option key={sede.id} value={sede.id}>{sede.nombre}</option>)}</select></div>}
+          : <div className="nero-campo"><label htmlFor="sede-registro">Sede *</label><select id="sede-registro" value={formulario.sedeId} required onChange={(event) => { cambiar("sedeId", event.target.value); cambiar("procesoIds", []); cambiar("padreId", ""); }}><option value="">Selecciona una sede</option>{sedesEmpresa.map((sede) => <option key={sede.id} value={sede.id}>{sede.nombre}</option>)}</select></div>}
         {tipo === "procesos" && <>
           <div className="nero-campo"><label htmlFor="padre-proceso">Proceso superior</label><select id="padre-proceso" value={formulario.padreId} onChange={e => cambiar("padreId", e.target.value)}><option value="">Sin proceso superior</option>{procesosEmpresa.filter(p => p.sedeId === formulario.sedeId && p.id !== formulario.id).map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}</select></div>
           <div className="nero-campo"><label htmlFor="tipo-proceso">Tipo de proceso *</label><select id="tipo-proceso" value={formulario.tipo} onChange={(event) => cambiar("tipo", event.target.value as Proceso["tipo"])}>{tiposProceso.map((item) => <option key={item}>{item}</option>)}</select></div>

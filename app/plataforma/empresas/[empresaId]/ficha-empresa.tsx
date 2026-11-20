@@ -2,9 +2,13 @@
 
 import Link from "next/link";
 import { useDemo } from "@/contexto/demostracion";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export default function FichaEmpresa({ id }: { id: string }) {
-  const { empresas } = useDemo();
+  const { empresas, seleccionarEmpresa } = useDemo();
+  const router = useRouter();
+  const [error, setError] = useState("");
   const empresa = empresas.find((item) => item.id === id);
 
   if (!empresa) return (
@@ -30,7 +34,7 @@ export default function FichaEmpresa({ id }: { id: string }) {
             <div><dt>Nombre comercial</dt><dd>{empresa.nombreComercial || "Sin nombre comercial"}</dd></div>
             <div><dt>RUC · identificación de ejemplo</dt><dd>{empresa.ruc}</dd></div>
             <div><dt>País</dt><dd>Perú</dd></div>
-            <div><dt>Moneda base</dt><dd>PEN — Sol peruano</dd></div>
+            <div><dt>Moneda base</dt><dd>{empresa.perfil.moneda}</dd></div>
           </dl>
         </section>
         <section className="nero-tarjeta">
@@ -45,6 +49,8 @@ export default function FichaEmpresa({ id }: { id: string }) {
               <Link href={`/aceptar-invitacion?empresa=${empresa.id}`} className="nero-boton">Probar invitación</Link>
             </div>
           )}
+          {empresa.estado === "Activa" && <div className="nero-acciones"><button className="nero-boton" onClick={() => { const resultado = seleccionarEmpresa(empresa.id); if (resultado.error) setError(resultado.error); else router.push("/gestion/organizacion"); }}>Abrir empresa en la demo</button></div>}
+          {error && <p className="nero-error" role="alert">{error}</p>}
         </section>
       </div>
     </main>

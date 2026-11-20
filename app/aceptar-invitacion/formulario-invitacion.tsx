@@ -25,8 +25,9 @@ export default function FormularioInvitacion() {
     }
     if (!empresa || !invitado || invitado.estado !== "Pendiente") return;
     // Solo cambiamos el estado de la demostración. No almacenamos contraseñas.
-    aceptarUsuario(invitado.id);
-    router.push("/gestion");
+    const resultado = aceptarUsuario(invitado.id);
+    if (resultado.error) { setError(resultado.error); return; }
+    router.push(invitado.principal ? "/gestion/organizacion" : "/gestion/personas/usuarios");
   }
 
   if (!empresa || !invitado || invitado.estado !== "Pendiente") return (

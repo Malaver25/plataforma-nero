@@ -6,7 +6,7 @@ import { useDemo } from "@/contexto/demostracion";
 import { roles, descripcionRoles, type Rol } from "@/datos-demo/usuarios";
 
 export default function InvitarUsuarioPage() {
-  const { empresas, empresaActual, invitarUsuario } = useDemo();
+  const { empresas, empresaActual, invitarUsuario, puestos } = useDemo();
   const empresa = empresas.find((item) => item.id === empresaActual)!;
   const [rol, setRol] = useState<Rol>("Operador");
   const [error, setError] = useState("");
@@ -18,7 +18,7 @@ export default function InvitarUsuarioPage() {
     const nombre = String(datos.get("nombre") ?? "").trim();
     const correo = String(datos.get("correo") ?? "").trim().toLowerCase();
     if (!nombre) { setError("Escribe el nombre del usuario."); return; }
-    const resultado = invitarUsuario({ nombre, correo, rol });
+    const resultado = invitarUsuario({ nombre, correo, rol, puestoId: String(datos.get("puesto") || "") });
     if (resultado.error) { setError(resultado.error); return; }
     if (resultado.id) setInvitacion({ id: resultado.id, correo });
   }
@@ -47,6 +47,7 @@ export default function InvitarUsuarioPage() {
             <small id="descripcion-rol">{descripcionRoles[rol]}</small>
           </div>
           <p className="nero-demo">El usuario establecerá su contraseña al aceptar la invitación. En esta demo no se guardan contraseñas ni se envían correos.</p>
+          <div className="nero-campo"><label htmlFor="puesto-invitado">Puesto inicial</label><select id="puesto-invitado" name="puesto"><option value="">Asignar después</option>{puestos.filter(p => p.empresaId === empresaActual).map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}</select><small>Puedes crearlo desde Puestos y permisos y asignarlo ahora o después.</small></div>
           {error && <p role="alert" className="nero-error">{error}</p>}
           <div className="nero-acciones nero-al-final"><Link href="/gestion/personas/usuarios" className="nero-boton nero-secundario">Cancelar</Link><button type="submit" className="nero-boton">Crear invitación de prueba</button></div>
         </form>

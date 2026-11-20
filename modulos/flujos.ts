@@ -43,6 +43,17 @@ export function avanceProyecto(id: string, registros: Dato[]) {
   const tareas = registros.filter(r => r.clave === "proyectos/tareas" && !r.archivado && r.valores.proyecto === id);
   return tareas.length ? Math.round(tareas.reduce((s, t) => s + (t.estado === "Completado" ? 100 : Number(t.valores.avance || 0)), 0) / tareas.length) : 0;
 }
+export function proteccionControl(valores: Record<string, string>) {
+  const factores = ["aplicacion", "ejecucion", "responsabilidad", "prevencion", "documentacion"].map(k => Number(valores[k]));
+  if (factores.some(n => !Number.isInteger(n) || n < 1 || n > 5)) return undefined;
+  const grado = Math.round(factores.reduce((s, n) => s + n, 0) / 5);
+  const tabla = valores.categoriaControl === "Genérico" ? [1, 0.95, 0.9, 0.85, 0.8] : [1, 0.8, 0.6, 0.4, 0.2];
+  return { grado, vulnerabilidad: tabla[grado - 1] };
+}
+export function riesgoConControl(probabilidad: number, impacto: number, control?: Dato) {
+  const proteccion = control && proteccionControl(control.valores);
+  return proteccion ? Math.round(probabilidad * impacto * proteccion.vulnerabilidad) : undefined;
+}
 export const transiciones: Record<string, Record<string, string[]>> = {
   "documentos/controlados": { Borrador: ["En revisión"], "En revisión": ["Borrador", "Pendiente de aprobación"], "Pendiente de aprobación": ["Borrador", "Aprobado"], Aprobado: ["Obsoleto"], Obsoleto: [] },
   "no-conformidades/registro": { Abierta: ["En proceso"], "En proceso": ["Abierta", "Cerrada"], Cerrada: ["Abierta"] },

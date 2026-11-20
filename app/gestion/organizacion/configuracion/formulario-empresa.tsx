@@ -32,7 +32,8 @@ export default function FormularioEmpresa({ empresa }: { empresa: Empresa }) {
       setError("La razón social no puede estar vacía.");
       return;
     }
-    actualizarEmpresa({ razonSocial: razonSocial.trim(), nombreComercial: nombreComercial.trim(), perfil });
+    const resultado = actualizarEmpresa({ razonSocial: razonSocial.trim(), nombreComercial: nombreComercial.trim(), perfil });
+    if (resultado.error) { setError(resultado.error); setMensaje(""); return; }
     setRazonSocial(razonSocial.trim());
     setNombreComercial(nombreComercial.trim());
     setError("");

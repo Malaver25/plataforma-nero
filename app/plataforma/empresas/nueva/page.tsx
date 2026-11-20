@@ -7,7 +7,7 @@ import { useDemo } from "@/contexto/demostracion";
 
 export default function NuevaEmpresa() {
   const router = useRouter();
-  const { empresas, usuarios, agregarEmpresa } = useDemo();
+  const { agregarEmpresa } = useDemo();
   const [error, setError] = useState("");
 
   function crearEmpresa(event: FormEvent<HTMLFormElement>) {
@@ -19,16 +19,9 @@ export default function NuevaEmpresa() {
       ruc: texto("numeroIdentificacion"), administrador: texto("nombreAdministrador"),
       correo: texto("correoAdministrador").toLowerCase(),
     };
-    if (!datos.razonSocial || !datos.administrador) {
-      setError("Completa la razón social y el nombre del administrador.");
-      return;
-    }
-    if (empresas.some((empresa) => empresa.ruc === datos.ruc) || usuarios.some((usuario) => usuario.correo.toLowerCase() === datos.correo)) {
-      setError("Ya existe una empresa de prueba con ese RUC o correo de administrador.");
-      return;
-    }
-    const id = agregarEmpresa(datos);
-    router.push(`/plataforma/empresas/${id}`);
+    const resultado = agregarEmpresa(datos);
+    if (resultado.error) { setError(resultado.error); return; }
+    if (resultado.id) router.push(`/plataforma/empresas/${resultado.id}`);
   }
 
   return (

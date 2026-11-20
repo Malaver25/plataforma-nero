@@ -95,7 +95,7 @@ function ContenidoModulo({ modulo, seccion }: { modulo: Modulo; seccion: Seccion
       <DetalleOperativo key={"operativo-" + registro.id} registro={registro} />
       {clave === "infinity/inventario" && <p className="nero-demo">Existencias actuales: <strong>{stock(registro, registros)}</strong> {registro.valores.unidad}. {stock(registro, registros) < Number(registro.valores.minimo || 0) ? "Stock por debajo del mínimo." : "Stock dentro del mínimo definido."}</p>}
       <h3 className="nero-subtitulo">Archivos de esta sesión</h3>
-      {registro.archivos.length ? <ul className="nero-archivos">{registro.archivos.map((archivo, indice) => <li key={indice}><span>{archivo.name}</span><button className="nero-enlace" onClick={() => descargar(archivo, archivo.name)}>Descargar</button></li>)}</ul> : <p className="nero-texto-secundario">No se adjuntaron archivos.</p>}
+      {registro.archivos.length ? <ul className="nero-archivos">{registro.archivos.map((archivo, indice) => <li key={indice}><span>{archivo.name}</span>{clave === "documentos/controlados" && registro.valores.descarga === "no" ? <small>Descarga desactivada en la interfaz</small> : <button className="nero-enlace" onClick={() => descargar(archivo, archivo.name)}>Descargar</button>}</li>)}</ul> : <p className="nero-texto-secundario">No se adjuntaron archivos.</p>}
       <h3 className="nero-subtitulo">Historial de cambios</h3>
       <ul className="nero-historial">{registro.historial.map((evento, indice) => <li key={indice}><span>{evento.accion}</span><small>{fechaVisible(evento.fecha)}</small></li>)}</ul>
       {!registro.historial.length && <p className="nero-texto-secundario">Registro de ejemplo sin cambios.</p>}
@@ -136,7 +136,7 @@ function FormularioRegistro({ clave, seccion, registro, cancelar, guardado }: { 
   const [archivos, setArchivos] = useState<File[]>(registro?.archivos || []);
   const [error, setError] = useState("");
   function cambiar(id: string, valor: string) {
-    setValores((actual) => ({ ...actual, [id]: valor, ...(id === "sede" ? { proceso: "" } : {}), ...(id === "proyecto" ? { hito: "" } : {}) }));
+    setValores((actual) => ({ ...actual, [id]: valor, ...(id === "sede" ? { proceso: "", ...(clave === "organizacion/departamentos" ? { padre: "" } : {}) } : {}), ...(id === "proyecto" ? { hito: "" } : {}) }));
     setError("");
   }
   function enviar(event: FormEvent<HTMLFormElement>) {

@@ -56,7 +56,7 @@ export function ProveedorModulosDemo({ children }: { children: ReactNode }) {
     if (campo.referencia === "usuarios") return usuarios.filter((item) => item.empresaId === empresaActual).map(({ id, nombre }) => ({ id, nombre }));
     if (campo.referencia === "sedes") return sedes.filter((item) => item.empresaId === empresaActual).map(({ id, nombre }) => ({ id, nombre }));
     if (campo.referencia === "procesos") return procesos.filter((item) => item.empresaId === empresaActual && (!valores.sede || item.sedeId === valores.sede)).map(({ id, nombre }) => ({ id, nombre }));
-    if (campo.referencia) return deEmpresa.filter((item) => item.clave === campo.referencia && (campo.id !== "hito" || !valores.proyecto || item.valores.proyecto === valores.proyecto)).map((item) => ({ id: item.id, nombre: item.nombre + (item.archivado ? " (archivado)" : "") }));
+    if (campo.referencia) return deEmpresa.filter((item) => item.clave === campo.referencia && (campo.id !== "hito" || !valores.proyecto || item.valores.proyecto === valores.proyecto) && (campo.referencia !== "organizacion/departamentos" || !valores.sede || item.valores.sede === valores.sede)).map((item) => ({ id: item.id, nombre: item.nombre + (item.archivado ? " (archivado)" : "") }));
     return (campo.opciones || []).map((nombre) => ({ id: nombre, nombre }));
   }
 
@@ -85,16 +85,20 @@ export function ProveedorModulosDemo({ children }: { children: ReactNode }) {
     if (clave === "documentos/controlados" && actual && actual.estado !== "Borrador") return { error: "Devuelve el documento a borrador o crea una nueva versión antes de editarlo." };
     if (datos.valores.padre) {
       let padre: Registro | undefined = deEmpresa.find(r => r.id === datos.valores.padre);
+      if (clave === "organizacion/departamentos" && padre?.valores.sede !== datos.valores.sede) return { error: "El departamento superior debe pertenecer a la misma sede." };
       const vistos = new Set<string>();
       while (padre) {
         if (padre.id === datos.id || vistos.has(padre.id)) return { error: "La jerarquía no puede contener ciclos." };
         vistos.add(padre.id); padre = deEmpresa.find(r => r.id === padre?.valores.padre);
       }
     }
+    if (clave === "organizacion/departamentos" && actual && actual.valores.sede !== datos.valores.sede && deEmpresa.some(r => r.clave === clave && r.valores.padre === actual.id)) return { error: "Reasigna los subdepartamentos antes de cambiar de sede." };
     if (clave === "proyectos/hitos" && actual && actual.valores.proyecto !== datos.valores.proyecto && deEmpresa.some(r => r.valores.hito === actual.id)) return { error: "El hito tiene tareas vinculadas. Reasígnalas antes de cambiar de proyecto." };
     if (["objetivos/mediciones", "indicadores/mediciones"].includes(clave) && datos.valores.periodo && datos.valores.fecha < datos.valores.periodo) return { error: "La medición no puede ser anterior al periodo que cubre." };
     if (clave === "equipamientos/intervenciones" && Boolean(datos.valores.calibracion) === Boolean(datos.valores.mantenimiento)) return { error: "Vincula exactamente una calibración o un mantenimiento." };
+    if (clave === "auditorias/resultados" && datos.estado === "Aprobado" && (!datos.valores.conclusiones?.trim() || !datos.archivos.length)) return { error: "Añade conclusiones y el informe adjunto antes de aprobar el resultado." };
     if (["riesgos/registro"].includes(clave) && ["probabilidad", "impacto", "probabilidadResidual", "impactoResidual"].some(c => datos.valores[c] && !Number.isInteger(Number(datos.valores[c])))) return { error: "Las escalas de riesgo usan números enteros de 1 a 5." };
+    if (clave === "riesgos/controles" && ["aplicacion", "ejecucion", "responsabilidad", "prevencion", "documentacion"].some(c => datos.valores[c] && !Number.isInteger(Number(datos.valores[c])))) return { error: "Los factores de protección deben ser enteros de 1 a 5." };
     if (!datos.nombre.trim()) return { error: "Escribe un nombre para el registro." };
     if (!seccion.estados?.includes(datos.estado)) return { error: "Selecciona un estado válido." };
     const error = validar(clave, datos.valores);
