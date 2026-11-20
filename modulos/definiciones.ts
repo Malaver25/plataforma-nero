@@ -2,12 +2,12 @@
 export type Campo = {
   id: string; etiqueta: string;
   tipo?: "texto" | "area" | "numero" | "fecha" | "email" | "seleccion" | "casilla";
-  opciones?: string[]; requerido?: boolean; minimo?: number; maximo?: number; referencia?: string;
+  opciones?: string[]; requerido?: boolean; minimo?: number; maximo?: number; referencia?: string; multiple?: boolean;
 };
 export type Seccion = {
   id: string; titulo: string; singular?: string; descripcion?: string; campos?: Campo[];
   estados?: string[]; ejemplos?: string[]; propia?: boolean;
-  modo?: "registros" | "configuracion" | "estadisticas" | "informacion" | "lectura" | "consulta";
+  modo?: "registros" | "configuracion" | "estadisticas" | "informacion" | "lectura" | "consulta" | "especial";
   contenido?: { titulo: string; texto: string }[];
 };
 export type Modulo = { id: string; titulo: string; descripcion: string; secciones: Seccion[] };

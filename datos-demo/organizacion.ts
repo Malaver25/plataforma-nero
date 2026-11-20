@@ -1,3 +1,4 @@
+import { modulos } from "@/modulos/catalogo";
 // Modelo inicial: una organización por empresa. Revisar si se requieren grupos de empresas.
 export type Sede = { id: string; empresaId: string; nombre: string; direccion: string };
 export const tiposProceso = ["Estratégico", "Operativo", "Apoyo"] as const;
@@ -8,16 +9,18 @@ export type Proceso = {
   nombre: string;
   tipo: (typeof tiposProceso)[number];
   descripcion: string;
+  padreId?: string;
 };
 
 export const funcionesPuesto = [
   { id: "organizacion", nombre: "Estructura de la organización" },
   { id: "personas", nombre: "Gestión de personas" },
   { id: "documentos", nombre: "Gestión documental" },
-] as const;
-export const nivelesAcceso = ["Sin acceso", "Lectura", "Edición"] as const;
+  ...modulos.flatMap(m => m.secciones.filter(s => !["informacion", "lectura"].includes(s.modo || "")).map(s => ({ id: m.id + "/" + s.id, nombre: m.titulo + " · " + s.titulo }))),
+];
+export const nivelesAcceso = ["Sin acceso", "Lectura", "Edición", "Revisión", "Aprobación"] as const;
 export type PermisosPuesto = Record<(typeof funcionesPuesto)[number]["id"], (typeof nivelesAcceso)[number]>;
-export const permisosVacios: PermisosPuesto = { organizacion: "Sin acceso", personas: "Sin acceso", documentos: "Sin acceso" };
+export const permisosVacios: PermisosPuesto = Object.fromEntries(funcionesPuesto.map(f => [f.id, "Sin acceso"]));
 export type Puesto = {
   id: string;
   empresaId: string;
@@ -26,6 +29,9 @@ export type Puesto = {
   responsabilidades: string;
   procesoIds: string[];
   permisos: PermisosPuesto;
+  requisitos?: string;
+  riesgo?: string;
+  revision?: string;
 };
 
 export type Borrador<T extends { id: string; empresaId: string }> = Omit<T, "id" | "empresaId"> & { id?: string };

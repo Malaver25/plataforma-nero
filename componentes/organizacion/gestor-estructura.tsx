@@ -16,6 +16,10 @@ type Formulario = {
   tipo: Proceso["tipo"];
   procesoIds: string[];
   permisos: PermisosPuesto;
+  padreId?: string;
+  requisitos?: string;
+  riesgo?: string;
+  revision?: string;
 };
 const textos = {
   sedes: { titulo: "Sedes", nuevo: "Nueva sede", editar: "Editar sede", descripcion: "Registra los centros de trabajo de tu organización." },
@@ -38,6 +42,7 @@ function EditorEstructura({ tipo }: { tipo: Tipo }) {
   const [formulario, setFormulario] = useState<Formulario | null>(null);
   const [error, setError] = useState("");
   const [mensaje, setMensaje] = useState("");
+  const [filtroPermisos, setFiltroPermisos] = useState("");
   const encabezado = useRef<HTMLHeadingElement>(null);
   const texto = textos[tipo];
   const visibles = registros.filter((item) => item.nombre.toLocaleLowerCase().includes(busqueda.trim().toLocaleLowerCase()));
@@ -46,7 +51,7 @@ function EditorEstructura({ tipo }: { tipo: Tipo }) {
     const sede = tipo === "sedes" ? sedesEmpresa.find((item) => item.id === id) : undefined;
     const proceso = tipo === "procesos" ? procesosEmpresa.find((item) => item.id === id) : undefined;
     const puesto = tipo === "puestos" ? puestosEmpresa.find((item) => item.id === id) : undefined;
-    setFormulario({ id, nombre: sede?.nombre || proceso?.nombre || puesto?.nombre || "", sedeId: proceso?.sedeId || puesto?.sedeId || "", direccion: sede?.direccion || "", descripcion: proceso?.descripcion || "", responsabilidades: puesto?.responsabilidades || "", tipo: proceso?.tipo || "Operativo", procesoIds: puesto?.procesoIds || [], permisos: { ...(puesto?.permisos || permisosVacios) } });
+    setFormulario({ id, nombre: sede?.nombre || proceso?.nombre || puesto?.nombre || "", sedeId: proceso?.sedeId || puesto?.sedeId || "", direccion: sede?.direccion || "", descripcion: proceso?.descripcion || "", responsabilidades: puesto?.responsabilidades || "", tipo: proceso?.tipo || "Operativo", procesoIds: puesto?.procesoIds || [], permisos: { ...permisosVacios, ...puesto?.permisos }, padreId: proceso?.padreId || "", requisitos: puesto?.requisitos || "", riesgo: puesto?.riesgo || "Sin evaluar", revision: puesto?.revision || "" });
     setError("");
     setMensaje("");
   }
@@ -61,8 +66,8 @@ function EditorEstructura({ tipo }: { tipo: Tipo }) {
     if (!formulario) return;
     const { id, nombre, direccion, sedeId, descripcion, responsabilidades, procesoIds, permisos } = formulario;
     const resultado = tipo === "sedes" ? guardarSede({ id, nombre, direccion })
-      : tipo === "procesos" ? guardarProceso({ id, nombre, sedeId, tipo: formulario.tipo, descripcion })
-      : guardarPuesto({ id, nombre, sedeId, responsabilidades, procesoIds, permisos });
+      : tipo === "procesos" ? guardarProceso({ id, nombre, sedeId, tipo: formulario.tipo, descripcion, padreId: formulario.padreId })
+      : guardarPuesto({ id, nombre, sedeId, responsabilidades, procesoIds, permisos, requisitos: formulario.requisitos, riesgo: formulario.riesgo, revision: formulario.revision });
     if (resultado.error) { setError(resultado.error); return; }
     setFormulario(null);
     setBusqueda("");
@@ -80,18 +85,23 @@ function EditorEstructura({ tipo }: { tipo: Tipo }) {
         {tipo === "sedes" ? <div className="nero-campo"><label htmlFor="direccion-sede">Dirección</label><input id="direccion-sede" value={formulario.direccion} onChange={(event) => cambiar("direccion", event.target.value)} maxLength={250} /></div>
           : <div className="nero-campo"><label htmlFor="sede-registro">Sede *</label><select id="sede-registro" value={formulario.sedeId} required onChange={(event) => { cambiar("sedeId", event.target.value); cambiar("procesoIds", []); }}><option value="">Selecciona una sede</option>{sedesEmpresa.map((sede) => <option key={sede.id} value={sede.id}>{sede.nombre}</option>)}</select></div>}
         {tipo === "procesos" && <>
+          <div className="nero-campo"><label htmlFor="padre-proceso">Proceso superior</label><select id="padre-proceso" value={formulario.padreId} onChange={e => cambiar("padreId", e.target.value)}><option value="">Sin proceso superior</option>{procesosEmpresa.filter(p => p.sedeId === formulario.sedeId && p.id !== formulario.id).map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}</select></div>
           <div className="nero-campo"><label htmlFor="tipo-proceso">Tipo de proceso *</label><select id="tipo-proceso" value={formulario.tipo} onChange={(event) => cambiar("tipo", event.target.value as Proceso["tipo"])}>{tiposProceso.map((item) => <option key={item}>{item}</option>)}</select></div>
           <div className="nero-campo nero-ancho-completo"><label htmlFor="descripcion-proceso">Descripción</label><textarea id="descripcion-proceso" value={formulario.descripcion} onChange={(event) => cambiar("descripcion", event.target.value)} rows={3} maxLength={2000} /></div>
         </>}
         {tipo === "puestos" && <>
+          <div className="nero-campo"><label htmlFor="puesto-requisitos">Requisitos y competencias</label><textarea id="puesto-requisitos" value={formulario.requisitos} onChange={e => cambiar("requisitos", e.target.value)} /></div>
+          <div className="nero-campo"><label htmlFor="puesto-riesgo">Riesgo del puesto</label><select id="puesto-riesgo" value={formulario.riesgo} onChange={e => cambiar("riesgo", e.target.value)}>{["Sin evaluar", "Bajo", "Medio", "Alto"].map(r => <option key={r}>{r}</option>)}</select></div>
+          <div className="nero-campo"><label htmlFor="puesto-revision">Próxima revisión</label><input id="puesto-revision" type="date" value={formulario.revision} onChange={e => cambiar("revision", e.target.value)} /></div>
           <div className="nero-campo nero-ancho-completo"><label htmlFor="responsabilidades-puesto">Funciones y responsabilidades</label><textarea id="responsabilidades-puesto" value={formulario.responsabilidades} onChange={(event) => cambiar("responsabilidades", event.target.value)} rows={3} maxLength={2000} /></div>
           <fieldset className="nero-ancho-completo nero-opciones"><legend>Procesos en los que participa</legend>
             {procesosEmpresa.filter((proceso) => proceso.sedeId === formulario.sedeId).map((proceso) => <label key={proceso.id}><input type="checkbox" checked={formulario.procesoIds.includes(proceso.id)} onChange={(event) => cambiar("procesoIds", event.target.checked ? [...formulario.procesoIds, proceso.id] : formulario.procesoIds.filter((id) => id !== proceso.id))} />{proceso.nombre}</label>)}
             {!procesosEmpresa.some((proceso) => proceso.sedeId === formulario.sedeId) && <p className="nero-texto-secundario">{formulario.sedeId ? "Esta sede aún no tiene procesos. Puedes vincularlos después." : "Selecciona una sede para ver sus procesos."}</p>}
           </fieldset>
           <fieldset className="nero-ancho-completo"><legend>Niveles de acceso propuestos</legend>
-            <p className="nero-demo">Esta configuración se guarda solo en la demo y todavía no restringe el acceso. La revisión y aprobación por carpeta se definirán con el módulo documental.</p>
-            <div className="nero-form-grid">{funcionesPuesto.map((funcion) => <div className="nero-campo" key={funcion.id}><label htmlFor={`permiso-${funcion.id}`}>{funcion.nombre}</label><select id={`permiso-${funcion.id}`} value={formulario.permisos[funcion.id]} onChange={(event) => cambiar("permisos", { ...formulario.permisos, [funcion.id]: event.target.value as PermisosPuesto[typeof funcion.id] })}>{nivelesAcceso.map((nivel) => <option key={nivel}>{nivel}</option>)}</select></div>)}</div>
+            <p className="nero-demo">Matriz por apartado. Define el acceso propuesto; no constituye autorización del servidor.</p>
+            <div className="nero-campo"><label htmlFor="filtro-permisos">Buscar permiso o módulo</label><input id="filtro-permisos" type="search" value={filtroPermisos} onChange={e => setFiltroPermisos(e.target.value)} /></div>
+            <div className="nero-permisos-grid">{funcionesPuesto.filter(f => f.nombre.toLowerCase().includes(filtroPermisos.toLowerCase())).map((funcion) => <div className="nero-campo" key={funcion.id}><label htmlFor={`permiso-${funcion.id}`}>{funcion.nombre}</label><select id={`permiso-${funcion.id}`} value={formulario.permisos[funcion.id] || "Sin acceso"} onChange={(event) => cambiar("permisos", { ...formulario.permisos, [funcion.id]: event.target.value as PermisosPuesto[typeof funcion.id] })}>{nivelesAcceso.map((nivel) => <option key={nivel}>{nivel}</option>)}</select></div>)}</div>
           </fieldset>
         </>}
       </div>

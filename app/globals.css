@@ -36,6 +36,33 @@
   }
 }
 @layer components {
+  .nero-arbol { @apply my-3 ml-4 grid gap-3 border-l border-slate-300 pl-4; }
+  .nero-arbol button[aria-pressed="true"] { @apply rounded bg-nero-amarillo-suave px-2 py-1; }
+  .nero-biblioteca { @apply my-6 grid grid-cols-[230px_minmax(0,1fr)] gap-6; }
+  .nero-periodo { @apply my-1 block whitespace-nowrap rounded border border-slate-300 bg-nero-azul-suave p-2 text-center text-sm; }
+  .nero-periodo[data-estado="hecho"] { @apply border-emerald-700 bg-emerald-50 text-emerald-900; }
+  .nero-periodo[data-estado="atrasado"] { @apply border-amber-700 bg-nero-amarillo-suave text-amber-950; }
+  .nero-grafico { @apply my-5 w-full max-w-[800px] rounded-xl border border-slate-200 bg-slate-50; }
+  .nero-version, .nero-flujo, .nero-disenador { @apply my-5 rounded-xl border border-slate-300 bg-slate-50 p-5; }
+  .nero-version h3, .nero-flujo h3 { @apply mb-3 text-lg font-semibold; }
+  .nero-version dl { @apply my-4 grid gap-2 text-sm; }
+  .nero-version dt { @apply font-semibold; }
+  .nero-version dd, .nero-contenido-texto { @apply whitespace-pre-wrap break-words; }
+  .nero-disenador legend { @apply px-2 text-lg font-semibold; }
+  .nero-pasos-flujo { @apply my-4 flex flex-wrap gap-2; }
+  .nero-pasos-flujo span { @apply rounded-full border border-slate-300 bg-white px-3 py-2 text-sm; }
+  .nero-pasos-flujo span[aria-current="step"] { @apply border-nero-azul bg-nero-amarillo font-semibold; }
+  .nero-matriz td { @apply border border-slate-300 p-0; }
+  .nero-matriz button { @apply flex min-h-[100px] w-full min-w-[95px] flex-col items-center justify-center gap-1 p-2; }
+  .nero-matriz button[aria-pressed="true"] { @apply outline-4 -outline-offset-4 outline-nero-azul; }
+  .nero-matriz td[data-nivel="Muy alto"] { @apply bg-red-100 text-red-950; }
+  .nero-matriz td[data-nivel="Alto"] { @apply bg-orange-100 text-orange-950; }
+  .nero-matriz td[data-nivel="Medio"] { @apply bg-nero-amarillo-suave text-amber-950; }
+  .nero-matriz td[data-nivel="Bajo"], .nero-matriz td[data-nivel="Muy bajo"] { @apply bg-nero-azul-suave; }
+  .nero-permisos-grid { @apply grid max-h-[480px] grid-cols-2 gap-x-6 overflow-y-auto p-2; }
+  .nero-campo select[multiple] { @apply min-h-[130px] bg-none pr-3; }
+  .nero-video { @apply my-4 aspect-video w-full rounded-lg bg-slate-900; }
+  @media (max-width: 760px) { .nero-biblioteca, .nero-permisos-grid { @apply grid-cols-1; } }
   /* Estructura, botones y superficies reutilizadas en todos los módulos. */
   .nero-cabecera { @apply flex flex-wrap items-center gap-6 border-b border-slate-200 bg-white; padding: 20px max(24px, calc((100vw - 1120px) / 2)); }
   .nero-marca { @apply inline-flex items-center gap-2.5 text-[23px] font-extrabold tracking-tight; }

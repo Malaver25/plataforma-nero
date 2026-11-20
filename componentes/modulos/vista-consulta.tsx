@@ -4,6 +4,9 @@ import Link from "next/link";
 import { useDemo } from "@/contexto/demostracion";
 import { useModulosDemo } from "@/contexto/modulos-demo";
 import { funcionesPuesto } from "@/datos-demo/organizacion";
+import { medicionesPendientes } from "@/modulos/flujos";
+import { useState } from "react";
+import { useFechaActual } from "./fecha-actual";
 
 function Tabla({ columnas, filas, vacio }: { columnas: string[]; filas: string[][]; vacio: string }) {
   return <div className="nero-tabla">
@@ -19,6 +22,8 @@ function datosTamano(bytes: number) { return bytes < 1024 ? bytes + " B" : (byte
 export default function VistaConsulta({ clave }: { clave: string }) {
   const { empresaActual, usuarios, usuarioActual, puestos } = useDemo();
   const { registros } = useModulosDemo();
+  const hoy = useFechaActual();
+  const [corte, setCorte] = useState("");
   const usuario = usuarios.find((item) => item.id === usuarioActual && item.empresaId === empresaActual);
   const puesto = puestos.find((item) => item.id === usuario?.puestoId && item.empresaId === empresaActual);
   const puestosEmpresa = puestos.filter((item) => item.empresaId === empresaActual);
@@ -50,20 +55,20 @@ export default function VistaConsulta({ clave }: { clave: string }) {
     const objetivos = clave.startsWith("objetivos");
     const origen = objetivos ? "objetivos/planificacion" : "indicadores/registro";
     const mediciones = objetivos ? "objetivos/mediciones" : "indicadores/mediciones";
-    columnas = ["Elemento", "Estado", "Mediciones registradas"];
+    columnas = ["Elemento", "Estado", "Fechas pendientes de medición"];
     filas = registros.filter((item) => item.clave === origen && !item.archivado && (objetivos ? ["Planificado", "En seguimiento"].includes(item.estado) : item.estado === "Activo"))
-      .map((item) => ({ item, cantidad: registros.filter((medicion) => medicion.clave === mediciones && !medicion.archivado && medicion.valores.origen === item.id).length }))
-      .filter(({ cantidad }) => cantidad === 0)
-      .map(({ item, cantidad }) => [item.nombre, item.estado, String(cantidad)]);
-    descripcion = "Pendientes orientativos: no hay calendario de vencimientos ni validación automática de mediciones.";
-    destino = "/gestion/" + (objetivos ? "objetivos" : "indicadores") + "/mediciones";
-    vacio = "Todos los elementos activos tienen alguna medición o aún no hay elementos registrados.";
+      .map(item => ({ item, fechas: medicionesPendientes(item, registros.filter(m => m.clave === mediciones), corte || hoy) }))
+      .filter(({ fechas }) => fechas.length > 0)
+      .map(({ item, fechas }) => [item.nombre, item.estado, fechas.join(", ")]);
+    descripcion = "Periodos sin cubrir hasta la fecha de corte. Abre el calendario para registrar cada medición.";
+    destino = "/gestion/" + (objetivos ? "objetivos" : "indicadores") + "/seguimiento";
+    vacio = "No hay periodos pendientes con las fechas y frecuencias registradas.";
   } else if (clave === "infinity/disponibles") {
     columnas = ["Proceso digital", "Estado"];
     filas = registros.filter((item) => item.clave === "infinity/procesos" && !item.archivado && item.estado === "Preparado")
       .map((item) => [item.nombre, item.estado]);
     descripcion = "Procesos listos en la maqueta, todavía no publicables ni ejecutables por externos.";
-    destino = "/gestion/infinity/procesos";
+    destino = "/gestion/infinity/ejecutar";
   } else if (clave === "infinity/validaciones") {
     columnas = ["Solicitud", "Estado", "Proceso"];
     filas = registros.filter((item) => item.clave === "infinity/solicitudes" && !item.archivado && item.estado === "Pendiente de validación")
@@ -84,6 +89,7 @@ export default function VistaConsulta({ clave }: { clave: string }) {
   }
 
   return <section className="nero-tarjeta">
+    {clave.endsWith("/pendientes") && <div className="nero-campo"><label htmlFor="pendientes-corte">Fecha de corte</label><input id="pendientes-corte" type="date" value={corte || hoy} onChange={e => setCorte(e.target.value)} /></div>}
     <p className="nero-demo">{descripcion}</p>
     <Tabla columnas={columnas} filas={filas} vacio={vacio} />
     {destino && <div className="nero-acciones"><Link href={destino} className="nero-boton nero-secundario">{textoEnlace}</Link></div>}

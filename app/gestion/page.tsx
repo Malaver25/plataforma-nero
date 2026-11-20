@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useDemo } from "@/contexto/demostracion";
 import { modulos, rutaSeccion } from "@/modulos/catalogo";
+import { PanelSeguimiento } from "@/componentes/modulos/seguimiento";
 
 export default function InicioGestionPage() {
   const { empresas, empresaActual, usuarios, usuarioActual, sedes, procesos, puestos } = useDemo();
@@ -19,6 +20,7 @@ export default function InicioGestionPage() {
     <main>
       <div className="nero-titulo"><div><p className="nero-sobretitulo">{empresa.nombreComercial || empresa.razonSocial}</p><h1>Hola, {usuario.nombre.split(" ")[0]}</h1><p>Empieza por la estructura y las personas de tu organización.</p></div><Link className="nero-boton" href="/gestion/organizacion">Ver estructura</Link></div>
       <dl className="nero-resumen nero-resumen-cuatro">{resumen.map((item) => <div className="nero-tarjeta" key={item.titulo}><dt><Link className="nero-enlace" href={item.url}>{item.titulo}</Link></dt><dd>{item.cantidad}</dd></div>)}</dl>
+      <PanelSeguimiento />
       <div className="nero-columnas">
         <section className="nero-tarjeta">
           <h2>Construye tu organización</h2>

@@ -6,7 +6,7 @@ import { useModulosDemo, type Valores } from "@/contexto/modulos-demo";
 
 export function leerValores(formulario: HTMLFormElement, campos: Campo[]): Valores {
   const datos = new FormData(formulario);
-  return Object.fromEntries(campos.map((campo) => [campo.id, campo.tipo === "casilla" ? (datos.has(campo.id) ? "si" : "no") : String(datos.get(campo.id) || "").trim()]));
+  return Object.fromEntries(campos.map((campo) => [campo.id, campo.multiple ? datos.getAll(campo.id).join("|") : campo.tipo === "casilla" ? (datos.has(campo.id) ? "si" : "no") : String(datos.get(campo.id) || "").trim()]));
 }
 
 export default function CamposFormulario({ campos, valores, cambiar }: { campos: Campo[]; valores: Valores; cambiar: (id: string, valor: string) => void }) {
@@ -19,7 +19,7 @@ export default function CamposFormulario({ campos, valores, cambiar }: { campos:
     return <div className={"nero-campo" + (campo.tipo === "area" ? " nero-ancho-completo" : "")} key={campo.id}>
       {campo.tipo === "casilla" ? <label className="nero-casilla"><input id={id} name={campo.id} type="checkbox" checked={valor === "si"} onChange={(event) => cambiar(campo.id, event.target.checked ? "si" : "no")} />{campo.etiqueta}</label> : <>
         <label htmlFor={id}>{campo.etiqueta}{campo.requerido ? " *" : ""}</label>
-        {seleccion ? <select id={id} name={campo.id} required={campo.requerido} value={valor} onChange={(event) => cambiar(campo.id, event.target.value)}>
+        {seleccion ? <select id={id} name={campo.id} required={campo.requerido} multiple={campo.multiple} value={campo.multiple ? valor.split("|").filter(Boolean) : valor} onChange={(event) => cambiar(campo.id, campo.multiple ? Array.from(event.target.selectedOptions).map(o => o.value).filter(Boolean).join("|") : event.target.value)}>
           <option value="">Seleccionar</option>{opciones.map((opcion) => <option key={opcion.id} value={opcion.id}>{opcion.nombre}</option>)}
         </select> : campo.tipo === "area" ? <textarea id={id} name={campo.id} value={valor} rows={4} required={campo.requerido} maxLength={5000} onChange={(event) => cambiar(campo.id, event.target.value)} /> :
           <input id={id} name={campo.id} type={campo.tipo === "numero" ? "number" : campo.tipo === "fecha" ? "date" : campo.tipo === "email" ? "email" : "text"} value={valor} required={campo.requerido} min={campo.minimo} max={campo.maximo} step={campo.tipo === "numero" ? "any" : undefined} maxLength={5000} onInput={(event) => cambiar(campo.id, event.currentTarget.value)} onChange={(event) => cambiar(campo.id, event.target.value)} />}

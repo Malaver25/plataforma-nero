@@ -6,6 +6,14 @@ import { useDemo } from "@/contexto/demostracion";
 import { useModulosDemo, type Registro, type Valores } from "@/contexto/modulos-demo";
 import CamposFormulario, { leerValores } from "./campos-formulario";
 import VistaConsulta from "./vista-consulta";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import VistaEspecial from "./vista-especial";
+import { AccionesFlujo } from "./documentos";
+import { Disenador } from "./formularios-dinamicos";
+import { stock, transiciones } from "@/modulos/flujos";
+import { Resultados } from "./seguimiento";
+import DetalleOperativo from "./detalle-operativo";
 
 function descargar(archivo: Blob, nombre: string) {
   const url = URL.createObjectURL(archivo);
@@ -21,35 +29,38 @@ function fechaVisible(valor: string) {
 
 export default function PantallaModulo({ moduloId, seccionId }: { moduloId: string; seccionId: string }) {
   const { empresaActual } = useDemo();
+  const query = useSearchParams().toString();
   const modulo = modulos.find((item) => item.id === moduloId)!;
   const seccion = modulo.secciones.find((item) => item.id === seccionId)!;
-  return <ContenidoModulo key={empresaActual + moduloId + seccionId} modulo={modulo} seccion={seccion} />;
+  return <ContenidoModulo key={empresaActual + moduloId + seccionId + query} modulo={modulo} seccion={seccion} />;
 }
 
 function ContenidoModulo({ modulo, seccion }: { modulo: Modulo; seccion: Seccion }) {
   const { registros, archivar, opcionesCampo } = useModulosDemo();
   const clave = modulo.id + "/" + seccion.id;
+  const parametros = useSearchParams();
   const propios = registros.filter((item) => item.clave === clave);
   const [busqueda, setBusqueda] = useState("");
   const [estado, setEstado] = useState("");
   const [archivados, setArchivados] = useState(false);
   const [orden, setOrden] = useState("recientes");
+  const [relacion, setRelacion] = useState<Record<string, string>>({});
   const [pagina, setPagina] = useState(1);
-  const [vista, setVista] = useState<"lista" | "formulario" | "detalle">("lista");
-  const [seleccionado, setSeleccionado] = useState<string | null>(null);
+  const [vista, setVista] = useState<"lista" | "formulario" | "detalle">(parametros.has("registro") ? "detalle" : parametros.has("crear") ? "formulario" : "lista");
+  const [seleccionado, setSeleccionado] = useState<string | null>(parametros.get("registro"));
   const [mensaje, setMensaje] = useState("");
   const titulo = useRef<HTMLHeadingElement>(null);
   const registro = propios.find((item) => item.id === seleccionado);
-  const columnas = (seccion.campos || []).filter((campo) => campo.tipo !== "area" && campo.tipo !== "casilla").slice(0, 2);
+  const columnas = (seccion.campos || []).filter((campo) => campo.tipo !== "area" && campo.tipo !== "casilla").slice(0, 4);
   const esListado = !seccion.modo || seccion.modo === "registros";
-  const filtrados = propios.filter((item) => item.archivado === archivados && (!estado || item.estado === estado) && (item.nombre + " " + Object.values(item.valores).join(" ")).toLocaleLowerCase().includes(busqueda.trim().toLocaleLowerCase())).sort((a, b) => orden === "nombre" ? a.nombre.localeCompare(b.nombre, "es") : orden === "estado" ? a.estado.localeCompare(b.estado, "es") : propios.indexOf(b) - propios.indexOf(a));
+  const filtrados = propios.filter((item) => item.archivado === archivados && (!estado || item.estado === estado) && Object.entries(relacion).every(([k, v]) => !v || (item.valores[k] || "").split("|").includes(v)) && (item.nombre + " " + Object.values(item.valores).join(" ") + " " + (seccion.campos || []).filter(c => c.referencia).map(c => mostrar(c, item)).join(" ")).toLocaleLowerCase().includes(busqueda.trim().toLocaleLowerCase())).sort((a, b) => orden === "nombre" ? a.nombre.localeCompare(b.nombre, "es") : orden === "estado" ? a.estado.localeCompare(b.estado, "es") : propios.indexOf(b) - propios.indexOf(a));
   const totalPaginas = Math.max(1, Math.ceil(filtrados.length / 8));
   const paginaActual = Math.min(pagina, totalPaginas);
 
   function mostrar(campo: Campo, item: Registro) {
     const valor = item.valores[campo.id];
     if (campo.tipo === "casilla") return valor === "si" ? "Sí" : "No";
-    if (campo.referencia) return opcionesCampo(campo, item.valores).find((opcion) => opcion.id === valor)?.nombre || "Sin asignar";
+    if (campo.referencia) return (campo.multiple ? (valor || "").split("|") : [valor]).map(v => opcionesCampo(campo, item.valores).find(opcion => opcion.id === v)?.nombre).filter(Boolean).join(", ") || "Sin asignar";
     return valor || "Sin completar";
   }
   function volver() { setVista("lista"); setSeleccionado(null); titulo.current?.focus(); }
@@ -66,22 +77,29 @@ function ContenidoModulo({ modulo, seccion }: { modulo: Modulo; seccion: Seccion
       {esListado && vista === "lista" && <button className="nero-boton" onClick={() => { setSeleccionado(null); setVista("formulario"); setMensaje(""); }}>Crear {seccion.singular}</button>}
     </div>
     {mensaje && <p className="nero-exito" role="status">{mensaje}</p>}
+    {seccion.modo === "especial" && <VistaEspecial modulo={modulo.id} seccion={seccion.id} />}
+    {esListado && vista === "lista" && <div className="nero-acciones nero-seccion">{modulo.secciones.filter(s => s.modo === "especial").map(s => <Link key={s.id} className="nero-boton nero-secundario" href={`/gestion/${modulo.id}/${s.id}`}>{s.titulo}</Link>)}</div>}
     {seccion.modo === "consulta" && <VistaConsulta clave={clave} />}
     {seccion.modo === "informacion" && <div className="nero-pila">{seccion.contenido?.map((bloque) => <section className="nero-tarjeta" key={bloque.titulo}><h2>{bloque.titulo}</h2><p className="nero-texto-secundario">{bloque.texto}</p></section>)}</div>}
     {seccion.modo === "configuracion" && <Configuracion clave={clave} seccion={seccion} />}
     {seccion.modo === "estadisticas" && <Estadisticas modulo={modulo} />}
+    {modulo.id === "indicadores" && seccion.modo === "estadisticas" && <Resultados modulo="indicadores" />}
     {seccion.modo === "lectura" && <section className="nero-tarjeta"><h2>Actividad de esta sesión</h2><ul className="nero-historial">{registros.filter((item) => item.clave.startsWith(modulo.id + "/")).flatMap((item) => item.historial.map((evento, indice) => <li key={item.id + indice}><strong>{item.nombre}</strong><span>{evento.accion}</span><small>{fechaVisible(evento.fecha)}</small></li>))}</ul>{!registros.some((item) => item.clave.startsWith(modulo.id + "/") && item.historial.length) && <p className="nero-vacio">Todavía no hay cambios registrados en este módulo.</p>}</section>}
     {esListado && vista === "formulario" && <FormularioRegistro clave={clave} seccion={seccion} registro={registro} cancelar={volver} guardado={(id) => { setSeleccionado(id); setVista("detalle"); setMensaje("Registro guardado en la demostración."); }} />}
+    {esListado && vista === "detalle" && !registro && <section className="nero-tarjeta"><p>El registro ya no está disponible en esta sesión.</p><button className="nero-boton" onClick={volver}>Volver al listado</button></section>}
     {esListado && vista === "detalle" && registro && <section className="nero-tarjeta">
       <div className="nero-seccion-cabecera"><div><span className="nero-etiqueta">{registro.archivado ? "Archivado" : registro.estado}</span><h2>{registro.nombre}</h2></div><button className="nero-boton nero-secundario" onClick={volver}>Volver al listado</button></div>
       <dl className="nero-detalle-grid">{(seccion.campos || []).map((campo) => <div key={campo.id} className={campo.tipo === "area" ? "nero-ancho-completo" : ""}><dt>{campo.etiqueta}</dt><dd>{mostrar(campo, registro)}</dd></div>)}</dl>
       {clave === "riesgos/registro" && <ResultadoRiesgo valores={registro.valores} />}
+      <AccionesFlujo key={registro.id} registro={registro} />
+      <DetalleOperativo key={"operativo-" + registro.id} registro={registro} />
+      {clave === "infinity/inventario" && <p className="nero-demo">Existencias actuales: <strong>{stock(registro, registros)}</strong> {registro.valores.unidad}. {stock(registro, registros) < Number(registro.valores.minimo || 0) ? "Stock por debajo del mínimo." : "Stock dentro del mínimo definido."}</p>}
       <h3 className="nero-subtitulo">Archivos de esta sesión</h3>
       {registro.archivos.length ? <ul className="nero-archivos">{registro.archivos.map((archivo, indice) => <li key={indice}><span>{archivo.name}</span><button className="nero-enlace" onClick={() => descargar(archivo, archivo.name)}>Descargar</button></li>)}</ul> : <p className="nero-texto-secundario">No se adjuntaron archivos.</p>}
       <h3 className="nero-subtitulo">Historial de cambios</h3>
       <ul className="nero-historial">{registro.historial.map((evento, indice) => <li key={indice}><span>{evento.accion}</span><small>{fechaVisible(evento.fecha)}</small></li>)}</ul>
       {!registro.historial.length && <p className="nero-texto-secundario">Registro de ejemplo sin cambios.</p>}
-      <div className="nero-acciones"><button className="nero-boton" onClick={() => setVista("formulario")}>Editar registro</button><button className="nero-boton nero-secundario" onClick={() => { archivar(registro.id); setMensaje(registro.archivado ? "Registro restaurado." : "Registro archivado. Puedes restaurarlo desde Archivados."); }}>{registro.archivado ? "Restaurar" : "Archivar"}</button></div>
+      <div className="nero-acciones"><button className="nero-boton" disabled={clave === "documentos/controlados" && registro.estado !== "Borrador"} onClick={() => setVista("formulario")}>Editar registro</button>{clave !== "infinity/movimientos" && <button className="nero-boton nero-secundario" onClick={() => { archivar(registro.id); setMensaje(registro.archivado ? "Registro restaurado." : "Registro archivado. Puedes restaurarlo desde Archivados."); }}>{registro.archivado ? "Restaurar" : "Archivar"}</button>}</div>
     </section>}
     {esListado && vista === "lista" && <>
       <dl className="nero-resumen">
@@ -90,6 +108,7 @@ function ContenidoModulo({ modulo, seccion }: { modulo: Modulo; seccion: Seccion
         <div className="nero-tarjeta"><dt>Archivados</dt><dd>{propios.filter((item) => item.archivado).length}</dd></div>
       </dl>
       <section className="nero-tarjeta">
+        <details className="nero-seccion"><summary>Filtros por relaciones</summary><div className="nero-form-grid">{(seccion.campos || []).filter(c => c.referencia).map(c => <div className="nero-campo" key={c.id}><label htmlFor={"filtrar-" + c.id}>{c.etiqueta}</label><select id={"filtrar-" + c.id} value={relacion[c.id] || ""} onChange={e => { setRelacion({ ...relacion, [c.id]: e.target.value }); setPagina(1); }}><option value="">Todos</option>{opcionesCampo(c).map(o => <option key={o.id} value={o.id}>{o.nombre}</option>)}</select></div>)}</div><button className="nero-enlace" onClick={() => setRelacion({})}>Limpiar filtros por relaciones</button></details>
         <div className="nero-seccion-cabecera"><div className="nero-conmutador"><button aria-pressed={!archivados} onClick={() => { setArchivados(false); setPagina(1); }}>Activos</button><button aria-pressed={archivados} onClick={() => { setArchivados(true); setPagina(1); }}>Archivados</button></div><button className="nero-boton nero-secundario" disabled={!filtrados.length} onClick={exportar}>Exportar CSV</button></div>
         <div className="nero-filtros">
           <div><label htmlFor="buscar-modulo">Buscar registro</label><input id="buscar-modulo" type="search" value={busqueda} placeholder="Nombre o contenido" onChange={(event) => { setBusqueda(event.target.value); setPagina(1); }} /></div>
@@ -107,10 +126,13 @@ function ContenidoModulo({ modulo, seccion }: { modulo: Modulo; seccion: Seccion
 }
 
 function FormularioRegistro({ clave, seccion, registro, cancelar, guardado }: { clave: string; seccion: Seccion; registro?: Registro; cancelar: () => void; guardado: (id: string) => void }) {
-  const { guardar } = useModulosDemo();
+  const { guardar, configuraciones } = useModulosDemo();
+  const { empresaActual } = useDemo();
+  const parametros = useSearchParams();
+  const valoresIniciales = registro?.valores || { ...(configuraciones[empresaActual + ":" + clave.split("/")[0] + "/configuracion"] || {}), ...Object.fromEntries((seccion.campos || []).filter(c => parametros.has(c.id)).map(c => [c.id, parametros.get(c.id)!])) };
   const [nombre, setNombre] = useState(registro?.nombre || "");
   const [estado, setEstado] = useState(registro?.estado || seccion.estados?.[0] || "");
-  const [valores, setValores] = useState<Valores>({ ...registro?.valores });
+  const [valores, setValores] = useState<Valores>({ ...valoresIniciales });
   const [archivos, setArchivos] = useState<File[]>(registro?.archivos || []);
   const [error, setError] = useState("");
   function cambiar(id: string, valor: string) {
@@ -119,7 +141,7 @@ function FormularioRegistro({ clave, seccion, registro, cancelar, guardado }: { 
   }
   function enviar(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const capturados = leerValores(event.currentTarget, seccion.campos || []);
+    const capturados = { ...valores, ...leerValores(event.currentTarget, seccion.campos || []) };
     setValores(capturados);
     const resultado = guardar(clave, { id: registro?.id, nombre, estado, valores: capturados, archivos });
     if (resultado.error) setError(resultado.error);
@@ -127,12 +149,13 @@ function FormularioRegistro({ clave, seccion, registro, cancelar, guardado }: { 
   }
   return <form className="nero-tarjeta" onSubmit={enviar}>
     <h2>{registro ? "Editar " : "Crear "}{seccion.singular}</h2>
-    <p className="nero-texto-secundario">* Campos obligatorios. Los cambios de estado son manuales en esta maqueta.</p>
+    <p className="nero-texto-secundario">* Campos obligatorios. {transiciones[clave] ? "Las etapas se completan desde las acciones del detalle." : "Los estados se registran manualmente en esta demostración."}</p>
     <div className="nero-form-grid">
       <div className="nero-campo"><label htmlFor="nombre-modulo">Nombre o título *</label><input id="nombre-modulo" value={nombre} onChange={(event) => setNombre(event.target.value)} required maxLength={160} autoFocus /></div>
-      <div className="nero-campo"><label htmlFor="estado-registro">Estado *</label><select id="estado-registro" value={estado} onChange={(event) => setEstado(event.target.value)} required>{seccion.estados?.map((item) => <option key={item}>{item}</option>)}</select></div>
+      <div className="nero-campo"><label htmlFor="estado-registro">Estado *</label><select id="estado-registro" disabled={!!transiciones[clave]} value={estado} onChange={(event) => setEstado(event.target.value)} required>{seccion.estados?.map((item) => <option key={item}>{item}</option>)}</select></div>
     </div>
     <CamposFormulario campos={seccion.campos || []} valores={valores} cambiar={cambiar} />
+    {["comunicaciones/cuestionarios", "infinity/procesos"].includes(clave) && <Disenador valores={valores} cambiar={cambiar} />}
     {clave === "riesgos/registro" && <ResultadoRiesgo valores={valores} />}
     <div className="nero-campo"><label htmlFor="archivos-modulo">Adjuntos de prueba</label><input id="archivos-modulo" type="file" multiple aria-describedby="ayuda-adjuntos" onChange={(event) => {
       const seleccion = Array.from(event.target.files || []);

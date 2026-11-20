@@ -56,6 +56,13 @@ export function ProveedorDemo({ children }: { children: ReactNode }) {
     if (error) return { error };
     if (!sedes.some((sede) => sede.id === datos.sedeId && sede.empresaId === empresaActual)) return { error: "Selecciona una sede de esta empresa." };
     if (!tiposProceso.includes(datos.tipo)) return { error: "Selecciona un tipo de proceso válido." };
+    if (procesos.some(p => p.padreId === datos.id && p.sedeId !== datos.sedeId)) return { error: "Reasigna los subprocesos antes de cambiar la sede." };
+    if (datos.padreId) {
+      let padre = procesos.find(p => p.id === datos.padreId && p.empresaId === empresaActual && p.sedeId === datos.sedeId);
+      if (!padre) return { error: "El proceso superior debe pertenecer a la misma sede." };
+      const vistos = new Set<string>();
+      while (padre) { if (padre.id === datos.id || vistos.has(padre.id)) return { error: "La jerarquía de procesos no puede contener ciclos." }; vistos.add(padre.id); padre = procesos.find(p => p.id === padre?.padreId); }
+    }
     if (puestos.some((puesto) => puesto.procesoIds.includes(datos.id || "") && puesto.sedeId !== datos.sedeId)) return { error: "Este proceso está vinculado a puestos de su sede actual. Actualiza esos puestos antes de cambiarlo de sede." };
     const registro: Proceso = { ...datos, nombre: datos.nombre.trim(), id: datos.id || crypto.randomUUID(), empresaId: empresaActual };
     setProcesos((actuales) => datos.id ? actuales.map((item) => item.id === datos.id ? registro : item) : [...actuales, registro]);
@@ -67,7 +74,7 @@ export function ProveedorDemo({ children }: { children: ReactNode }) {
     if (error) return { error };
     if (!sedes.some((sede) => sede.id === datos.sedeId && sede.empresaId === empresaActual)) return { error: "Selecciona una sede de esta empresa." };
     if (datos.procesoIds.some((id) => !procesos.some((proceso) => proceso.id === id && proceso.empresaId === empresaActual && proceso.sedeId === datos.sedeId))) return { error: "Los procesos deben pertenecer a la sede seleccionada." };
-    if (funcionesPuesto.some(({ id }) => !nivelesAcceso.includes(datos.permisos[id]))) return { error: "Revisa los niveles de acceso." };
+    if (funcionesPuesto.some(({ id }) => datos.permisos[id] && !nivelesAcceso.includes(datos.permisos[id]))) return { error: "Revisa los niveles de acceso." };
     const registro: Puesto = { ...datos, nombre: datos.nombre.trim(), id: datos.id || crypto.randomUUID(), empresaId: empresaActual };
     setPuestos((actuales) => datos.id ? actuales.map((item) => item.id === datos.id ? registro : item) : [...actuales, registro]);
     return { id: registro.id };
