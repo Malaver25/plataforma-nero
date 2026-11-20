@@ -7,7 +7,7 @@ export type Campo = {
 export type Seccion = {
   id: string; titulo: string; singular?: string; descripcion?: string; campos?: Campo[];
   estados?: string[]; ejemplos?: string[]; propia?: boolean;
-  modo?: "registros" | "configuracion" | "estadisticas" | "informacion" | "lectura";
+  modo?: "registros" | "configuracion" | "estadisticas" | "informacion" | "lectura" | "consulta";
   contenido?: { titulo: string; texto: string }[];
 };
 export type Modulo = { id: string; titulo: string; descripcion: string; secciones: Seccion[] };
@@ -32,6 +32,7 @@ export const tarea = [responsable, ...fechas, descripcion];
 export const evaluacion = [responsable, fecha("fechaFin", "Fecha límite"), referencia("cuestionario", "Cuestionario", "comunicaciones/cuestionarios"), descripcion];
 export const listado = (id: string, titulo: string, singular: string, campos: Campo[], ejemplos: string[] = [], estados = pendientes): Seccion => ({ id, titulo, singular, campos, ejemplos, estados });
 export const configuracion = (campos: Campo[], descripcion = "Ajusta las preferencias de este módulo en la demostración."): Seccion => ({ id: "configuracion", titulo: "Configuración", modo: "configuracion", campos, descripcion });
+export const consulta = (id: string, titulo: string, descripcion: string): Seccion => ({ id, titulo, descripcion, modo: "consulta" });
 export const estadisticas: Seccion = { id: "estadisticas", titulo: "Estadísticas", modo: "estadisticas" };
 export const auditoriaLog: Seccion = { id: "accesos", titulo: "Historial de actividad", modo: "lectura", descripcion: "Cambios realizados durante esta demostración. No representa un registro de seguridad del servidor." };
 export const medicion = (origen: string): Campo[] => [referencia("origen", "Elemento a medir", origen, true), fecha("fecha", "Fecha de medición", true), numero("valor", "Resultado"), texto("unidad", "Unidad"), responsable, area("observaciones", "Observaciones")];

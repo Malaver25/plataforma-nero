@@ -12,13 +12,13 @@ Las antiguas rutas /panel, /panel/configuracion y /panel/usuarios redirigen a su
 
 ## Estado del proyecto
 
-Hay 16 módulos y 84 apartados navegables. Las pantallas de gestión permiten crear y editar registros ficticios, buscar, filtrar, consultar detalles, archivar, restaurar y exportar CSV. Los campos y estados están definidos por módulo. Los archivos se mantienen como objetos File en memoria y se pueden descargar durante la sesión.
+Hay 16 módulos de gestión y una página de inicio. El catálogo incluye pantallas adicionales para cubrir apartados del documento SOFIDYA; el número de pestañas se obtiene del catálogo. Las pantallas de gestión permiten crear y editar registros ficticios, buscar, filtrar, consultar detalles, archivar, restaurar y exportar CSV. Los campos y estados están definidos por módulo. Los archivos se mantienen como objetos File en memoria y se pueden descargar durante la sesión.
 
 Las sedes, procesos, puestos y usuarios forman la base de organización. Las referencias entre módulos permiten relacionar documentos y registros, auditorías y hallazgos, proyectos e hitos, entre otros.
 
 Todo sigue siendo una demostración: los datos se conservan al navegar y se reinician al recargar. Los estados se cambian manualmente. No hay autenticación, autorización en el servidor, base de datos, almacenamiento de archivos, correo ni aprobaciones reales.
 
-Campus y Analytics muestran su estado pendiente de integración. El canal público de denuncias y los portales externos aún no están implementados. La sección de facturas solo registra información; no emite comprobantes. Las preferencias de los módulos no activan servicios externos.
+Campus, Analytics, verificación de accesos y otras vistas sin servicio real muestran explícitamente su estado de demostración. El canal público de denuncias y los portales externos aún no están implementados. La sección de facturas solo registra información; no emite comprobantes. Las preferencias de los módulos no activan servicios externos.
 
 ## Estructura para estudiar el código
 

@@ -5,6 +5,7 @@ import { modulos, type Campo, type Modulo, type Seccion } from "@/modulos/catalo
 import { useDemo } from "@/contexto/demostracion";
 import { useModulosDemo, type Registro, type Valores } from "@/contexto/modulos-demo";
 import CamposFormulario, { leerValores } from "./campos-formulario";
+import VistaConsulta from "./vista-consulta";
 
 function descargar(archivo: Blob, nombre: string) {
   const url = URL.createObjectURL(archivo);
@@ -65,6 +66,7 @@ function ContenidoModulo({ modulo, seccion }: { modulo: Modulo; seccion: Seccion
       {esListado && vista === "lista" && <button className="nero-boton" onClick={() => { setSeleccionado(null); setVista("formulario"); setMensaje(""); }}>Crear {seccion.singular}</button>}
     </div>
     {mensaje && <p className="nero-exito" role="status">{mensaje}</p>}
+    {seccion.modo === "consulta" && <VistaConsulta clave={clave} />}
     {seccion.modo === "informacion" && <div className="nero-pila">{seccion.contenido?.map((bloque) => <section className="nero-tarjeta" key={bloque.titulo}><h2>{bloque.titulo}</h2><p className="nero-texto-secundario">{bloque.texto}</p></section>)}</div>}
     {seccion.modo === "configuracion" && <Configuracion clave={clave} seccion={seccion} />}
     {seccion.modo === "estadisticas" && <Estadisticas modulo={modulo} />}

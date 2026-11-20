@@ -1,38 +1,48 @@
-import { type Modulo, listado, configuracion, informacion, texto, area, fecha, numero, opciones, referencia, casilla, responsable, sede, proceso, norma, descripcion, frecuencia, fechas, documento, tarea, evaluacion, auditoriaLog, medicion, estadisticas, configuracionSeguimiento } from "./definiciones";
+import { type Modulo, listado, configuracion, informacion, texto, area, fecha, numero, opciones, referencia, casilla, responsable, sede, proceso, norma, descripcion, frecuencia, fechas, documento, tarea, evaluacion, auditoriaLog, medicion, estadisticas, configuracionSeguimiento, consulta } from "./definiciones";
 
 export const gestionInterna: Modulo[] = [
   { id: "organizacion", titulo: "Organización", descripcion: "La estructura que sostiene el sistema de gestión.", secciones: [
     { id: "", titulo: "Estructura", propia: true },
     { id: "sedes", titulo: "Sedes", propia: true },
     { id: "procesos", titulo: "Procesos", propia: true },
-    listado("normas", "Normas", "norma", [descripcion], ["Sistema de calidad · ejemplo", "Política ambiental · ejemplo"], ["Activa", "Inactiva"]),
+    listado("departamentos", "Departamentos", "departamento", [sede, proceso, responsable, descripcion], [], ["Activo", "Inactivo"]),
+    listado("normas", "Normas y objetivos", "norma u objetivo", [opciones("tipo", "Tipo", ["Norma", "Objetivo"], true), descripcion], ["Sistema de calidad · ejemplo", "Política ambiental · ejemplo"], ["Activa", "Inactiva"]),
     listado("activos", "Activos", "activo", [sede, texto("codigo", "Código"), opciones("tipo", "Tipo", ["Información", "Tecnología", "Instalación", "Otro"]), responsable, opciones("clasificacion", "Clasificación", ["Pública", "Interna", "Confidencial"]), descripcion], ["Repositorio documental · ejemplo"], ["Activo", "Inactivo"]),
+    { ...configuracion([opciones("color", "Paleta visual de referencia", ["Azul", "Rojo", "Verde", "Gris"]), casilla("paneles", "Mostrar los paneles de inicio"), casilla("indicadores", "Mostrar indicadores de inicio"), casilla("menu", "Mostrar módulos disponibles")], "Preferencias de la maqueta. La paleta y la visibilidad no modifican todavía la interfaz real."), id: "personalizacion", titulo: "Personalización de interfaz" },
     { id: "configuracion", titulo: "Configuración", propia: true },
   ] },
   { id: "personas", titulo: "Personas", descripcion: "Puestos, equipo, documentos y formación.", secciones: [
     { id: "usuarios", titulo: "Usuarios", propia: true }, { id: "puestos", titulo: "Puestos y permisos", propia: true },
     listado("documentacion", "Documentación", "documento de personal", [referencia("persona", "Persona", "usuarios", true), opciones("accion", "Acción", ["Solicitar", "Entregar", "Guardar"]), ...documento, casilla("lectura", "Requiere confirmación de lectura")]),
     listado("planes-documentales", "Planes documentales", "plan documental", [frecuencia, responsable, referencia("destinatario", "Destinatario", "usuarios"), descripcion]),
+    consulta("mis-documentos", "Mis documentos", "Documentos de personal vinculados al usuario de demostración actual."),
     listado("evaluaciones", "Evaluaciones", "evaluación", [referencia("persona", "Persona evaluada", "usuarios", true), ...evaluacion]),
-    listado("formacion", "Formación", "acción formativa", [responsable, ...fechas, opciones("modalidad", "Modalidad", ["Presencial", "Virtual", "Mixta"]), numero("duracion", "Duración en horas"), area("objetivos", "Objetivos de la formación")], ["Inducción al sistema de gestión · ejemplo"], ["Planificada", "En curso", "Realizada", "Cancelada"]),
+    listado("formacion", "Acciones formativas", "acción formativa", [responsable, ...fechas, opciones("modalidad", "Modalidad", ["Presencial", "Virtual", "Mixta"]), numero("duracion", "Duración en horas"), area("objetivos", "Objetivos de la formación")], ["Inducción al sistema de gestión · ejemplo"], ["Planificada", "En curso", "Realizada", "Cancelada"]),
     informacion("campus", "Campus", [{ titulo: "Campus de formación", texto: "La planificación de capacitaciones se encuentra en Formación. El catálogo externo, la matrícula, la reproducción de cursos y la emisión de certificados requieren definir una plataforma y todavía no están integrados." }]),
+    informacion("analytics", "Analytics", [{ titulo: "Consultas y monitorización", texto: "La referencia SOFIDYA muestra consultas y monitorizaciones. Esta sección de navegación está preparada, pero no hay un proveedor externo ni consultas reales integradas." }]),
+    consulta("verificacion-accesos", "Verificación de accesos", "Vista orientativa de cuentas pendientes; no verifica identidades reales."),
     auditoriaLog,
+    consulta("mapa-permisos", "Mapa de permisos de puestos", "Consulta los niveles propuestos para cada puesto de la empresa actual."),
+    { ...configuracion([opciones("riesgoPuesto", "Niveles de riesgo del puesto", ["Bajo, Medio, Alto", "Sin clasificación"]), casilla("revision", "Proponer revisión de puestos"), casilla("documentacion", "Proponer documentación del puesto")], "Configuración de demostración. No cambia las autorizaciones reales."), id: "configuracion-puestos", titulo: "Configuración de puestos" },
   ] },
   { id: "documentos", titulo: "Documentos", descripcion: "Biblioteca, versiones y seguimiento documental.", secciones: [
     listado("controlados", "Controlados", "documento controlado", documento, ["Manual del sistema de gestión · ejemplo", "Procedimiento de revisión documental · ejemplo"], ["Borrador", "En revisión", "Aprobado", "Obsoleto"]),
-    listado("no-controlados", "No controlados", "documento", [texto("carpeta", "Carpeta"), responsable, descripcion], ["Material de consulta · ejemplo"], ["Disponible", "Archivado"]),
+    listado("carpetas", "Carpetas", "carpeta", [descripcion], [], ["Disponible", "Archivada"]),
+    listado("no-controlados", "No controlados", "documento", [referencia("carpeta", "Carpeta", "documentos/carpetas"), responsable, descripcion], ["Material de consulta · ejemplo"], ["Disponible", "Archivado"]),
     listado("registros", "Registros pendientes", "registro", [referencia("documento", "Documento de origen", "documentos/controlados", true), ...tarea]),
     configuracion([responsable, referencia("revisor", "Revisor por defecto", "usuarios"), referencia("aprobador", "Aprobador por defecto", "usuarios"), numero("conservacion", "Conservación en años", 1, 99), casilla("codificacion", "Codificación automática propuesta")]),
   ] },
   { id: "objetivos", titulo: "Objetivos", descripcion: "Metas, tareas y evidencia de resultados.", secciones: [
     listado("planificacion", "Planificación", "objetivo", [sede, proceso, norma, responsable, ...fechas, frecuencia, numero("meta", "Meta esperada"), texto("unidad", "Unidad"), descripcion], ["Mejorar el cumplimiento documental · ejemplo"], ["Planificado", "En seguimiento", "Cumplido", "No cumplido"]),
     listado("mediciones", "Mediciones", "medición", medicion("objetivos/planificacion"), [], ["Registrada", "Validada"]),
+    consulta("pendientes", "Mediciones pendientes", "Objetivos de demostración que todavía no tienen medición registrada."),
     listado("tareas", "Tareas", "tarea", [referencia("objetivo", "Objetivo", "objetivos/planificacion", true), ...tarea]),
     configuracionSeguimiento(),
   ] },
   { id: "riesgos", titulo: "Riesgos", descripcion: "Identificación, evaluación y seguimiento de controles.", secciones: [
     listado("evaluaciones", "Evaluaciones", "evaluación", [sede, proceso, norma, responsable, opciones("enfoque", "Enfoque", ["Procesos", "Activos", "Estructura libre"]), descripcion], ["Evaluación de procesos · ejemplo"], ["En preparación", "En evaluación", "Aprobada", "Cerrada"]),
     listado("registro", "Registro de riesgos", "riesgo", [referencia("evaluacion", "Evaluación", "riesgos/evaluaciones", true), proceso, area("causa", "Causa"), area("consecuencia", "Consecuencia"), { ...numero("probabilidad", "Probabilidad (1–5)", 1, 5), requerido: true }, { ...numero("impacto", "Impacto (1–5)", 1, 5), requerido: true }, responsable], ["Pérdida de evidencia documental · ejemplo"], ["Identificado", "En tratamiento", "Controlado"]),
+    listado("propuestos", "Riesgos propuestos", "riesgo propuesto", [proceso, responsable, area("causas", "Posibles causas"), area("efectos", "Posibles efectos"), descripcion], [], ["Propuesto", "En revisión", "Aceptado", "Rechazado"]),
     listado("controles", "Biblioteca de controles", "control", [responsable, frecuencia, opciones("naturaleza", "Naturaleza", ["Preventivo", "Detectivo", "Correctivo"]), descripcion], ["Revisión periódica de respaldos · ejemplo"], ["Propuesto", "Implementado", "En revisión"]),
     listado("tratamiento", "Tratamiento", "plan de tratamiento", [referencia("riesgo", "Riesgo", "riesgos/registro", true), referencia("control", "Control", "riesgos/controles"), ...tarea]),
     listado("seguimiento", "Seguimiento", "seguimiento", [referencia("control", "Control", "riesgos/controles", true), ...tarea, opciones("resultado", "Resultado", ["Sin incidencias", "Con incidencias"])]),
@@ -50,6 +60,7 @@ export const gestionInterna: Modulo[] = [
   { id: "indicadores", titulo: "Indicadores", descripcion: "Resultados, metas y mediciones periódicas.", secciones: [
     listado("registro", "Indicadores", "indicador", [sede, proceso, norma, responsable, frecuencia, texto("unidad", "Unidad"), numero("meta", "Meta"), area("formula", "Definición y fórmula (descriptiva)"), ...fechas], ["Cumplimiento del plan documental · ejemplo", "Acciones cerradas en plazo · ejemplo"], ["Activo", "Inactivo"]),
     listado("mediciones", "Mediciones", "medición", medicion("indicadores/registro"), [], ["Registrada", "Validada"]),
+    consulta("pendientes", "Mediciones pendientes", "Indicadores activos sin una medición en esta demostración."),
     listado("agrupaciones", "Agrupaciones", "agrupación", [descripcion], ["Calidad · ejemplo"], ["Activa", "Inactiva"]),
     estadisticas, configuracionSeguimiento(),
   ] },
